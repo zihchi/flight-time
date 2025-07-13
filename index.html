@@ -36,6 +36,7 @@
 <label>Class 1 休息裝備<select id="class1"><option value="yes">有</option><option value="no">無</option></select></label>
 </form>
 <button onclick="calculateAll()">計算</button>
+<button onclick="location.reload()">重置</button>
 <div class="result" id="result"></div>
 <div class="timeline" id="timeline"></div>
 <script>
@@ -47,9 +48,9 @@ function initSelectors(){
     for(let s of ms)for(let i=0;i<60;i++)s.append(new Option(pad(i),i));
 }
 function setDefaultDateToday(){
-    const todayUTC = new Date(new Date().toISOString().substring(0,10));
+    const todayStr = new Date().toISOString().substring(0,10);
     ["checkinDate","endDate","hotelInDate","hotelOutDate"].forEach(id=>{
-        document.getElementById(id).valueAsDate=todayUTC;
+        document.getElementById(id).value = todayStr;
     });
 }
 document.addEventListener("DOMContentLoaded",()=>{
@@ -102,9 +103,9 @@ function calculateAll(){
     let rpStart = isAway ? hotelIn : endDT;
     let rpEnd = isAway ? hotelOut : new Date(endDT.getTime() + maxRP * 60000);
     let actualRP = (rpEnd - rpStart) / 60000;
-    let result=`<p${actualFDP>mfdpLimit?' class=\"alert\"':''}>FDP: ${Math.floor(actualFDP/60)}h ${actualFDP%60}m / MFDP: ${Math.floor(mfdpLimit/60)}h${actualFDP>mfdpLimit?' ⚠️ 超過限制':''}</p>`;
-    result+=`<p${actualFT>maxFT?' class=\"alert\"':''}>FT: ${Math.floor(actualFT/60)}h ${actualFT%60}m / Max FT: ${Math.floor(maxFT/60)}h${actualFT>maxFT?' ⚠️ 超過限制':''}</p>`;
-    result+=`<p${actualRP<maxRP?' class=\"alert\"':''}>RP: ${Math.floor(actualRP/60)}h ${actualRP%60}m / MRP: ${Math.floor(maxRP/60)}h${actualRP<maxRP?' ⚠️ 不足':''}</p>`;
+    let result=`<p${actualFDP>mfdpLimit?' class="alert"':''}>FDP: ${Math.floor(actualFDP/60)}h ${actualFDP%60}m / MFDP: ${Math.floor(mfdpLimit/60)}h${actualFDP>mfdpLimit?' ⚠️ 超過限制':''}</p>`;
+    result+=`<p${actualFT>maxFT?' class="alert"':''}>FT: ${Math.floor(actualFT/60)}h ${actualFT%60}m / Max FT: ${Math.floor(maxFT/60)}h${actualFT>maxFT?' ⚠️ 超過限制':''}</p>`;
+    result+=`<p${actualRP<maxRP?' class="alert"':''}>RP: ${Math.floor(actualRP/60)}h ${actualRP%60}m / MRP: ${Math.floor(maxRP/60)}h${actualRP<maxRP?' ⚠️ 不足':''}</p>`;
     document.getElementById('result').innerHTML=result;
     const timeline=document.getElementById('timeline');timeline.innerHTML='';
     const totalWidth=(rpEnd-checkinDT)/60000;
@@ -123,3 +124,4 @@ function calculateAll(){
 </script>
 </body>
 </html>
+
