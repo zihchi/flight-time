@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>飛時計算工具</title>
+<style>
+    body { font-family: Arial, sans-serif; line-height: 2; margin: 20px; }
+    form { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+    label { display: flex; flex-direction: column; font-size: 14px; }
+    select, input[type=date] { padding: 4px; margin-top: 4px; }
+    button { padding: 6px 12px; margin-top: 20px; }
+    .result { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 20px; }
+    .alert { color: red; font-weight: bold; }
+    .timeline { margin-top: 40px; border-top: 2px solid #333; position: relative; height: 180px; max-width: 90%; }
+    .block { position: absolute; height: 30px; color: white; text-align: center; line-height: 30px; border-radius: 4px; font-size: 14px; }
+    .block.fdp { background: #4CAF50; top: -10px; }
+    .block.mfdp { background: #2196F3; top: 40px; }
+    .block.mrp { background: #FF9800; top: 70px; }
+    .block.rp { background: #555; top: 100px; }
+    .label { position: absolute; top: 160px; font-size: 13px; white-space: nowrap; }
+    .tick { position: absolute; top: -12px; height: 192px; border-left: 2px solid #555; }
+</style>
+</head>
+<body>
+<h2>飛時計算工具</h2>
+<form>
+<label>出發地<select id="originType"><option value="home">基地</option><option value="away">外站</option></select></label>
+<div id="hotelTimes" style="display:none;">
+    <label>Hotel Check-in<input type="date" id="hotelInDate"><select id="hotelInHour"></select>:<select id="hotelInMinute"></select></label>
+    <label>Hotel Check-out<input type="date" id="hotelOutDate"><select id="hotelOutHour"></select>:<select id="hotelOutMinute"></select></label>
+</div>
+<label>報到 (UTC 日期+時間)<input type="date" id="checkinDate"><select id="checkinHour"></select>:<select id="checkinMinute"></select></label>
+<label>任務結束 (UTC 日期+時間)<input type="date" id="endDate"><select id="endHour"></select>:<select id="endMinute"></select></label>
+<label>Flight Time (飛行時間 總時:分)<select id="ftHour"></select>:<select id="ftMinute"></select></label>
+<label>組員人數<select id="crew"><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+<label>Class 1 休息裝備<select id="class1"><option value="yes">有</option><option value="no">無</option></select></label>
+</form>
+<button onclick="calculateAll()">計算</button>
+<div class="result" id="result"></div>
+<div class="timeline" id="timeline"></div>
+<script>
+function pad(n){ return n.toString().padStart(2,'0'); }
+function initSelectors(){
+    let hs=["checkinHour","endHour","ftHour","hotelInHour","hotelOutHour"].map(id=>document.getElementById(id));
+    let ms=["checkinMinute","endMinute","ftMinute","hotelInMinute","hotelOutMinute"].map(id=>document.getElementById(id));
+    for(let s of hs)for(let i=0;i<24;i++)s.append(new Option(pad(i),i));
+    for(let s of ms)for(let i=0;i<60;i++)s.append(new Option(pad(i),i));
+}
+function setDefaultDateToday(){
+    const todayUTC = new Date(new Date().toISOString().substring(0,10));
+    ["checkinDate","endDate","hotelInDate","hotelOutDate"].forEach(id=>{
+        document.getElementById(id).valueAsDate=todayUTC;
+    });
+}
+document.addEventListener("DOMContentLoaded",()=>{
+    initSelectors();
+    setDefaultDateToday();
+    document.getElementById("originType").addEventListener("change",()=>{
+        document.getElementById("hotelTimes").style.display = document.getElementById("originType").value==="away" ? "block" : "none";
+    });
+});
+function addBlock(start,width,text,cls){
+    const div=document.createElement('div');
+    div.className='block '+cls;
+    div.style.left=start+'%';
+    div.style.width=width+'%';
+    div.textContent=text;
+    document.getElementById('timeline').appendChild(div);
+}
+function addLabel(pos,text){
+    const div=document.createElement('div');
+    div.className='label';
+    div.style.left=pos+'%';
+    div.textContent=text;
+    document.getElementById('timeline').appendChild(div);
+}
+function addTick(pos){
+    const tick=document.createElement('div');
+    tick.className='tick';
+    tick.style.left=pos+'%';
+    document.getElementById('timeline').appendChild(tick);
+}
+function calculateAll(){
+    let cD=document.getElementById('checkinDate').value,eD=document.getElementById('endDate').value;
+    let cH=parseInt(document.getElementById('checkinHour').value),cM=parseInt(document.getElementById('checkinMinute').value);
+    let eH=parseInt(document.getElementById('endHour').value),eM=parseInt(document.getElementById('endMinute').value);
+    let checkinDT=new Date(`${cD}T${pad(cH)}:${pad(cM)}:00Z`);
+    let endDT=new Date(`${eD}T${pad(eH)}:${pad(eM)}:00Z`);
+    let crew=parseInt(document.getElementById('crew').value);
+    let class1=document.getElementById('class1').value==="yes";
+    let ftH=parseInt(document.getElementById('ftHour').value), ftM=parseInt(document.getElementById('ftMinute').value);
+    let actualFDP=(endDT-checkinDT)/60000;
+    let actualFT=ftH*60+ftM;
+    let mfdpLimit=crew===2?840:(crew===3?1080:1440);
+    let maxRP=crew===2?(actualFT<=480?600:1080):(crew===3?(actualFT<=480?600:(actualFT<=720?1080:1440)):(actualFT<=480?600:(actualFT<=960?1080:1320)));
+    let maxFT=crew===2?600:(crew===3?(class1?960:720):(class1?1080:720));
+    let isAway = document.getElementById("originType").value==="away";
+    let hID=document.getElementById('hotelInDate').value,hIH=parseInt(document.getElementById('hotelInHour').value),hIM=parseInt(document.getElementById('hotelInMinute').value);
+    let hOD=document.getElementById('hotelOutDate').value,hOH=parseInt(document.getElementById('hotelOutHour').value),hOM=parseInt(document.getElementById('hotelOutMinute').value);
+    let hotelIn = new Date(`${hID}T${pad(hIH)}:${pad(hIM)}:00Z`);
+    let hotelOut= new Date(`${hOD}T${pad(hOH)}:${pad(hOM)}:00Z`);
+    let rpStart = isAway ? hotelIn : endDT;
+    let rpEnd = isAway ? hotelOut : new Date(endDT.getTime() + maxRP * 60000);
+    let actualRP = (rpEnd - rpStart) / 60000;
+    let result=`<p${actualFDP>mfdpLimit?' class=\"alert\"':''}>FDP: ${Math.floor(actualFDP/60)}h ${actualFDP%60}m / MFDP: ${Math.floor(mfdpLimit/60)}h${actualFDP>mfdpLimit?' ⚠️ 超過限制':''}</p>`;
+    result+=`<p${actualFT>maxFT?' class=\"alert\"':''}>FT: ${Math.floor(actualFT/60)}h ${actualFT%60}m / Max FT: ${Math.floor(maxFT/60)}h${actualFT>maxFT?' ⚠️ 超過限制':''}</p>`;
+    result+=`<p${actualRP<maxRP?' class=\"alert\"':''}>RP: ${Math.floor(actualRP/60)}h ${actualRP%60}m / MRP: ${Math.floor(maxRP/60)}h${actualRP<maxRP?' ⚠️ 不足':''}</p>`;
+    document.getElementById('result').innerHTML=result;
+    const timeline=document.getElementById('timeline');timeline.innerHTML='';
+    const totalWidth=(rpEnd-checkinDT)/60000;
+    addBlock(0,(actualFDP/totalWidth)*100,`FDP ${Math.floor(actualFDP/60)}h ${actualFDP%60}m`,'fdp');
+    addBlock(0,(mfdpLimit/totalWidth)*100,`MFDP ${Math.floor(mfdpLimit/60)}h`,'mfdp');
+    addBlock(((rpStart-checkinDT)/60000)/totalWidth*100,(maxRP/totalWidth)*100,`MRP ${Math.floor(maxRP/60)}h`,'mrp');
+    addBlock(((rpStart-checkinDT)/60000)/totalWidth*100,((rpEnd-rpStart)/60000)/totalWidth*100,`RP ${Math.floor(actualRP/60)}h ${actualRP%60}m${actualRP<maxRP?' ⚠️ 不足':''}`,'rp');
+    addTick(0); addTick((actualFDP/totalWidth)*100); addTick(((rpStart-checkinDT)/60000)/totalWidth*100); addTick(((rpEnd-checkinDT)/60000)/totalWidth*100); addTick(100);
+    addLabel(0,`報到 ${pad(checkinDT.getUTCMonth()+1)}/${pad(checkinDT.getUTCDate())} ${pad(checkinDT.getUTCHours())}:${pad(checkinDT.getUTCMinutes())}Z`);
+    addLabel((actualFDP/totalWidth)*100,`任務結束 ${pad(endDT.getUTCMonth()+1)}/${pad(endDT.getUTCDate())} ${pad(endDT.getUTCHours())}:${pad(endDT.getUTCMinutes())}Z`);
+    if(isAway){
+        addLabel(((rpStart-checkinDT)/60000)/totalWidth*100,`CI ${pad(hotelIn.getUTCMonth()+1)}/${pad(hotelIn.getUTCDate())} ${pad(hotelIn.getUTCHours())}:${pad(hotelIn.getUTCMinutes())}Z`);
+    }
+    addLabel(100,`結束 ${pad(rpEnd.getUTCMonth()+1)}/${pad(rpEnd.getUTCDate())} ${pad(rpEnd.getUTCHours())}:${pad(rpEnd.getUTCMinutes())}Z`);
+}
+</script>
+</body>
+</html>
