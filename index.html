@@ -38,7 +38,6 @@
 <button onclick="calculateAll()">計算</button>
 <div class="result" id="result"></div>
 <div class="timeline" id="timeline"></div>
-
 <script>
 function pad(n){ return n.toString().padStart(2,'0'); }
 function initSelectors(){
@@ -47,13 +46,19 @@ function initSelectors(){
     for(let s of hs)for(let i=0;i<24;i++)s.append(new Option(pad(i),i));
     for(let s of ms)for(let i=0;i<60;i++)s.append(new Option(pad(i),i));
 }
+function setDefaultDateToday(){
+    const todayUTC = new Date(new Date().toISOString().substring(0,10));
+    ["checkinDate","endDate","hotelInDate","hotelOutDate"].forEach(id=>{
+        document.getElementById(id).valueAsDate=todayUTC;
+    });
+}
 document.addEventListener("DOMContentLoaded",()=>{
     initSelectors();
+    setDefaultDateToday();
     document.getElementById("originType").addEventListener("change",()=>{
         document.getElementById("hotelTimes").style.display = document.getElementById("originType").value==="away" ? "block" : "none";
     });
 });
-
 function addBlock(start,width,text,cls){
     const div=document.createElement('div');
     div.className='block '+cls;
@@ -75,11 +80,10 @@ function addTick(pos){
     tick.style.left=pos+'%';
     document.getElementById('timeline').appendChild(tick);
 }
-
 function calculateAll(){
-    let cD=document.getElementById('checkinDate').value, eD=document.getElementById('endDate').value;
-    let cH=parseInt(document.getElementById('checkinHour').value), cM=parseInt(document.getElementById('checkinMinute').value);
-    let eH=parseInt(document.getElementById('endHour').value), eM=parseInt(document.getElementById('endMinute').value);
+    let cD=document.getElementById('checkinDate').value,eD=document.getElementById('endDate').value;
+    let cH=parseInt(document.getElementById('checkinHour').value),cM=parseInt(document.getElementById('checkinMinute').value);
+    let eH=parseInt(document.getElementById('endHour').value),eM=parseInt(document.getElementById('endMinute').value);
     let checkinDT=new Date(`${cD}T${pad(cH)}:${pad(cM)}:00Z`);
     let endDT=new Date(`${eD}T${pad(eH)}:${pad(eM)}:00Z`);
     let crew=parseInt(document.getElementById('crew').value);
@@ -98,12 +102,10 @@ function calculateAll(){
     let rpStart = isAway ? hotelIn : endDT;
     let rpEnd = isAway ? hotelOut : new Date(endDT.getTime() + maxRP * 60000);
     let actualRP = (rpEnd - rpStart) / 60000;
-
     let result=`<p${actualFDP>mfdpLimit?' class=\"alert\"':''}>FDP: ${Math.floor(actualFDP/60)}h ${actualFDP%60}m / MFDP: ${Math.floor(mfdpLimit/60)}h${actualFDP>mfdpLimit?' ⚠️ 超過限制':''}</p>`;
     result+=`<p${actualFT>maxFT?' class=\"alert\"':''}>FT: ${Math.floor(actualFT/60)}h ${actualFT%60}m / Max FT: ${Math.floor(maxFT/60)}h${actualFT>maxFT?' ⚠️ 超過限制':''}</p>`;
     result+=`<p${actualRP<maxRP?' class=\"alert\"':''}>RP: ${Math.floor(actualRP/60)}h ${actualRP%60}m / MRP: ${Math.floor(maxRP/60)}h${actualRP<maxRP?' ⚠️ 不足':''}</p>`;
     document.getElementById('result').innerHTML=result;
-
     const timeline=document.getElementById('timeline');timeline.innerHTML='';
     const totalWidth=(rpEnd-checkinDT)/60000;
     addBlock(0,(actualFDP/totalWidth)*100,`FDP ${Math.floor(actualFDP/60)}h ${actualFDP%60}m`,'fdp');
@@ -113,8 +115,9 @@ function calculateAll(){
     addTick(0); addTick((actualFDP/totalWidth)*100); addTick(((rpStart-checkinDT)/60000)/totalWidth*100); addTick(((rpEnd-checkinDT)/60000)/totalWidth*100); addTick(100);
     addLabel(0,`報到 ${pad(checkinDT.getUTCMonth()+1)}/${pad(checkinDT.getUTCDate())} ${pad(checkinDT.getUTCHours())}:${pad(checkinDT.getUTCMinutes())}Z`);
     addLabel((actualFDP/totalWidth)*100,`任務結束 ${pad(endDT.getUTCMonth()+1)}/${pad(endDT.getUTCDate())} ${pad(endDT.getUTCHours())}:${pad(endDT.getUTCMinutes())}Z`);
-    addLabel(((rpStart-checkinDT)/60000)/totalWidth*100,`CI ${pad(hotelIn.getUTCMonth()+1)}/${pad(hotelIn.getUTCDate())} ${pad(hotelIn.getUTCHours())}:${pad(hotelIn.getUTCMinutes())}Z`);
-    addLabel(((rpEnd-checkinDT)/60000)/totalWidth*100,`CO ${pad(hotelOut.getUTCMonth()+1)}/${pad(hotelOut.getUTCDate())} ${pad(hotelOut.getUTCHours())}:${pad(hotelOut.getUTCMinutes())}Z`);
+    if(isAway){
+        addLabel(((rpStart-checkinDT)/60000)/totalWidth*100,`CI ${pad(hotelIn.getUTCMonth()+1)}/${pad(hotelIn.getUTCDate())} ${pad(hotelIn.getUTCHours())}:${pad(hotelIn.getUTCMinutes())}Z`);
+    }
     addLabel(100,`結束 ${pad(rpEnd.getUTCMonth()+1)}/${pad(rpEnd.getUTCDate())} ${pad(rpEnd.getUTCHours())}:${pad(rpEnd.getUTCMinutes())}Z`);
 }
 </script>
