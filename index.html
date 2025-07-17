@@ -34,6 +34,11 @@
 <label>Flight Time (飛行時間 總時:分)<select id="ftHour"></select>:<select id="ftMinute"></select></label>
 <label>組員人數<select id="crew"><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
 <label>Class 1 休息裝備<select id="class1"><option value="yes">有</option><option value="no">無</option></select></label>
+<label>Next Duty (UTC 日期+時間)
+  <input type="date" id="nextDutyDate">
+  <select id="nextDutyHour"></select>:<select id="nextDutyMinute"></select>
+</label>
+    
 </form>
 <button onclick="calculateAll()">計算</button>
 <button onclick="location.reload()">重置</button>
@@ -42,16 +47,19 @@
 <script>
 function pad(n){ return n.toString().padStart(2,'0'); }
 function initSelectors(){
-    let hs=["checkinHour","endHour","ftHour","hotelInHour","hotelOutHour"].map(id=>document.getElementById(id));
-    let ms=["checkinMinute","endMinute","ftMinute","hotelInMinute","hotelOutMinute"].map(id=>document.getElementById(id));
+    let hs=["checkinHour","endHour","ftHour","hotelInHour","hotelOutHour","nextDutyHour"].map(id=>document.getElementById(id));
+    let ms=["checkinMinute","endMinute","ftMinute","hotelInMinute","hotelOutMinute","nextDutyMinute"].map(id=>document.getElementById(id));
     for(let s of hs)for(let i=0;i<24;i++)s.append(new Option(pad(i),i));
     for(let s of ms)for(let i=0;i<60;i++)s.append(new Option(pad(i),i));
+    
+
 }
 function setDefaultDateToday(){
     const todayStr = new Date().toISOString().substring(0,10);
-    ["checkinDate","endDate","hotelInDate","hotelOutDate"].forEach(id=>{
-        document.getElementById(id).value = todayStr;
-    });
+    ["checkinDate","endDate","hotelInDate","hotelOutDate","nextDutyDate"].forEach(id=>{
+  document.getElementById(id).value = todayStr;
+});
+
 }
 document.addEventListener("DOMContentLoaded",()=>{
     initSelectors();
@@ -100,8 +108,20 @@ function calculateAll(){
     let hOD=document.getElementById('hotelOutDate').value,hOH=parseInt(document.getElementById('hotelOutHour').value),hOM=parseInt(document.getElementById('hotelOutMinute').value);
     let hotelIn = new Date(`${hID}T${pad(hIH)}:${pad(hIM)}:00Z`);
     let hotelOut= new Date(`${hOD}T${pad(hOH)}:${pad(hOM)}:00Z`);
-    let rpStart = isAway ? hotelIn : endDT;
-    let rpEnd = isAway ? hotelOut : new Date(endDT.getTime() + maxRP * 60000);
+    let rpStart = endDT;
+let nextDutyDate = document.getElementById("nextDutyDate").value;
+let ndH = parseInt(document.getElementById("nextDutyHour").value || "0", 10);
+let ndM = parseInt(document.getElementById("nextDutyMinute").value || "0", 10);
+let hasNextDuty = !!(nextDutyDate && !isNaN(ndH) && !isNaN(ndM));
+
+
+let rpEnd;
+if (hasNextDuty) {
+  rpEnd = new Date(`${nextDutyDate}T${pad(ndH)}:${pad(ndM)}:00Z`);
+} else {
+  rpEnd = new Date(endDT.getTime() + maxRP * 60000);
+}
+
     let actualRP = (rpEnd - rpStart) / 60000;
     let result=`<p${actualFDP>mfdpLimit?' class="alert"':''}>FDP: ${Math.floor(actualFDP/60)}h ${actualFDP%60}m / MFDP: ${Math.floor(mfdpLimit/60)}h${actualFDP>mfdpLimit?' ⚠️ 超過限制':''}</p>`;
     result+=`<p${actualFT>maxFT?' class="alert"':''}>FT: ${Math.floor(actualFT/60)}h ${actualFT%60}m / Max FT: ${Math.floor(maxFT/60)}h${actualFT>maxFT?' ⚠️ 超過限制':''}</p>`;
@@ -120,6 +140,11 @@ function calculateAll(){
         addLabel(((rpStart-checkinDT)/60000)/totalWidth*100,`CI ${pad(hotelIn.getUTCMonth()+1)}/${pad(hotelIn.getUTCDate())} ${pad(hotelIn.getUTCHours())}:${pad(hotelIn.getUTCMinutes())}Z`);
     }
     addLabel(100,`結束 ${pad(rpEnd.getUTCMonth()+1)}/${pad(rpEnd.getUTCDate())} ${pad(rpEnd.getUTCHours())}:${pad(rpEnd.getUTCMinutes())}Z`);
+    if (hasNextDuty) {
+  addLabel(((rpEnd - checkinDT) / 60000) / totalWidth * 100,
+    `Next Duty ${pad(rpEnd.getUTCMonth()+1)}/${pad(rpEnd.getUTCDate())} ${pad(rpEnd.getUTCHours())}:${pad(rpEnd.getUTCMinutes())}Z`);
+}
+
 }
 </script>
 </body>
