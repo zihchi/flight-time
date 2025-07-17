@@ -47,13 +47,27 @@
 <script>
 function pad(n){ return n.toString().padStart(2,'0'); }
 function initSelectors(){
-    let hs=["checkinHour","endHour","ftHour","hotelInHour","hotelOutHour","nextDutyHour"].map(id=>document.getElementById(id));
-    let ms=["checkinMinute","endMinute","ftMinute","hotelInMinute","hotelOutMinute","nextDutyMinute"].map(id=>document.getElementById(id));
-    for(let s of hs)for(let i=0;i<24;i++)s.append(new Option(pad(i),i));
-    for(let s of ms)for(let i=0;i<60;i++)s.append(new Option(pad(i),i));
-    
+    const hourIds = ["checkinHour","endHour","ftHour","hotelInHour","hotelOutHour","nextDutyHour"];
+    const minuteIds = ["checkinMinute","endMinute","ftMinute","hotelInMinute","hotelOutMinute","nextDutyMinute"];
 
+    // 先加一個空白選項（適用 nextDutyHour / nextDutyMinute）
+    for (let id of hourIds) {
+        const select = document.getElementById(id);
+        if (id === "nextDutyHour") select.append(new Option("","")); // 空白預設
+        for (let i = 0; i < 24; i++) {
+            select.append(new Option(pad(i), i));
+        }
+    }
+
+    for (let id of minuteIds) {
+        const select = document.getElementById(id);
+        if (id === "nextDutyMinute") select.append(new Option("","")); // 空白預設
+        for (let i = 0; i < 60; i++) {
+            select.append(new Option(pad(i), i));
+        }
+    }
 }
+
 function setDefaultDateToday(){
     const todayStr = new Date().toISOString().substring(0,10);
     ["checkinDate","endDate","hotelInDate","hotelOutDate","nextDutyDate"].forEach(id=>{
@@ -139,7 +153,6 @@ if (hasNextDuty) {
     if(isAway){
         addLabel(((rpStart-checkinDT)/60000)/totalWidth*100,`CI ${pad(hotelIn.getUTCMonth()+1)}/${pad(hotelIn.getUTCDate())} ${pad(hotelIn.getUTCHours())}:${pad(hotelIn.getUTCMinutes())}Z`);
     }
-    addLabel(100,`結束 ${pad(rpEnd.getUTCMonth()+1)}/${pad(rpEnd.getUTCDate())} ${pad(rpEnd.getUTCHours())}:${pad(rpEnd.getUTCMinutes())}Z`);
     if (hasNextDuty) {
   addLabel(((rpEnd - checkinDT) / 60000) / totalWidth * 100,
     `Next Duty ${pad(rpEnd.getUTCMonth()+1)}/${pad(rpEnd.getUTCDate())} ${pad(rpEnd.getUTCHours())}:${pad(rpEnd.getUTCMinutes())}Z`);
