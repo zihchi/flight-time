@@ -19,6 +19,22 @@
     .block.rp { background: #555; top: 100px; }
     .label { position: absolute; top: 160px; font-size: 13px; white-space: nowrap; }
     .tick { position: absolute; top: -12px; height: 192px; border-left: 2px solid #555; }
+    .notes {
+  margin-top: 30px;
+  border-top: 1px dashed #aaa;
+  padding-top: 20px;
+  font-size: 14px;
+  max-width: 90%;
+}
+
+.notes ul {
+  padding-left: 20px;
+}
+
+.notes li {
+  margin-bottom: 10px;
+  line-height: 1.8;
+}
 </style>
 </head>
 <body>
@@ -38,6 +54,24 @@
 </form>
 <button onclick="calculateAll()">計算</button>
 <button onclick="location.reload()">重置</button>
+<div class="notes">
+  <h3>📌 備註事項</h3>
+  <ul>
+    <li>待命前至少休 10hr</li>
+    <li>FDP 從報到開始算，直到 Block with engine shutdown 或 Crew released</li>
+    <li>所有任務前 DP 都算 FDP</li>
+    <li>DHD after flight 不算進 FDP limitation，但會影響 RP 計算</li>
+    <li>FDP 前的待命，如果沒在 suitable accommodation，也會算進 FDP，反之則不算</li>
+    <li>像我們在家待命那樣增加 FDP 的方式：<br>
+      └ First Flight Sector 之前有在 suitable accommodation 休息超過 3hr 就不算 FDP，<br>
+      └ 之後則可增加 1/2 休息進 FDP，但最多就是 24hr</li>
+    <li>待超過 48hr in 6 小時差，48hr 內不能再派遣，<br>
+      └ 除非又飛回同地方 or 同地方 3 小時差，DHD 不在此限</li>
+    <li>FDP in Circadian（02L-05L）最多 3 天，<br>
+      └ 2 天休 34hr，3 天休 54hr，<br>
+      └ 如果每次 FDP 後有休 14hr，則無此 3 天限制</li>
+  </ul>
+</div>    
 <div class="result" id="result"></div>
 <div class="timeline" id="timeline"></div>
 <script>
