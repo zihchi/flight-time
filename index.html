@@ -7,7 +7,13 @@
     body { font-family: Arial, sans-serif; line-height: 2; margin: 20px; }
     form { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
     label { display: flex; flex-direction: column; font-size: 14px; }
-    select, input[type=date] { padding: 4px; margin-top: 4px; }
+    select, input[type="date"] {
+  padding: 8px 10px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+}
     button { padding: 6px 12px; margin-top: 20px; }
     .result { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 20px; }
     .alert { color: red; font-weight: bold; }
@@ -35,22 +41,109 @@
   margin-bottom: 10px;
   line-height: 1.8;
 }
+    /* 時間欄位合併成一排 */
+.time-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.time-row select {
+  width: 70px;
+  font-size: 16px;
+  padding: 6px;
+}
+
+/* 響應式（iPad / 手機） */
+@media (max-width: 768px) {
+  form {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  label {
+    width: 100%;
+  }
+
+  .time-row {
+    justify-content: flex-start;
+  }
+}
+    button {
+  padding: 8px 20px;
+  font-size: 16px;
+  margin-right: 10px;
+  background-color: #2196F3;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #1976D2;
+}
 </style>
+    
 </head>
 <body>
 <h2>飛時計算工具</h2>
 <form>
-<label>出發地<select id="originType"><option value="home">基地</option><option value="away">外站</option></select></label>
-<label>報到 (UTC 日期+時間)<input type="date" id="checkinDate"><select id="checkinHour"></select>:<select id="checkinMinute"></select></label>
-<label>任務結束 (UTC 日期+時間)<input type="date" id="endDate"><select id="endHour"></select>:<select id="endMinute"></select></label>
-<label>Flight Time (飛行時間 總時:分)<select id="ftHour"></select>:<select id="ftMinute"></select></label>
-<label>組員人數<select id="crew"><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
-<label>Class 1 休息裝備<select id="class1"><option value="yes">有</option><option value="no">無</option></select></label>
-<label>Next Duty (UTC 日期+時間)
-  <input type="date" id="nextDutyDate">
-  <select id="nextDutyHour"></select>:<select id="nextDutyMinute"></select>
-</label>
-    
+  <label>出發地
+    <select id="originType">
+      <option value="home">基地</option>
+      <option value="away">外站</option>
+    </select>
+  </label>
+
+  <label>報到 (UTC 日期+時間)
+    <input type="date" id="checkinDate">
+    <div class="time-row">
+      <select id="checkinHour"></select>
+      <span>:</span>
+      <select id="checkinMinute"></select>
+    </div>
+  </label>
+
+  <label>任務結束 (UTC 日期+時間)
+    <input type="date" id="endDate">
+    <div class="time-row">
+      <select id="endHour"></select>
+      <span>:</span>
+      <select id="endMinute"></select>
+    </div>
+  </label>
+
+  <label>Flight Time (飛行時間 總時:分)
+    <div class="time-row">
+      <select id="ftHour"></select>
+      <span>:</span>
+      <select id="ftMinute"></select>
+    </div>
+  </label>
+
+  <label>組員人數
+    <select id="crew">
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+    </select>
+  </label>
+
+  <label>Class 1 休息裝備
+    <select id="class1">
+      <option value="yes">有</option>
+      <option value="no">無</option>
+    </select>
+  </label>
+
+  <label>Next Duty (UTC 日期+時間)
+    <input type="date" id="nextDutyDate">
+    <div class="time-row">
+      <select id="nextDutyHour"></select>
+      <span>:</span>
+      <select id="nextDutyMinute"></select>
+    </div>
+  </label>
 </form>
 <button onclick="calculateAll()">計算</button>
 <button onclick="location.reload()">重置</button>
