@@ -2,10 +2,18 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>飛時計算工具</title>
 <style>
     body { font-family: Arial, sans-serif; line-height: 2; margin: 20px; }
-    form { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+    form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+  max-width: 900px;
+  margin: auto;
+}
     label { display: flex; flex-direction: column; font-size: 14px; }
     select, input[type="date"] {
   padding: 8px 10px;
@@ -14,7 +22,7 @@
   border: 1px solid #ccc;
   background-color: #f9f9f9;
 }
-    button { padding: 6px 12px; margin-top: 20px; }
+
     .result { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 20px; }
     .alert { color: red; font-weight: bold; }
     .timeline { margin-top: 40px; border-top: 2px solid #333; position: relative; height: 180px; max-width: 90%; }
@@ -82,73 +90,81 @@
 button:hover {
   background-color: #1976D2;
 }
+
+.button-group {
+  margin-top: 10px;
+}
+    .container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
 </style>
     
 </head>
-<body>
-<h2>飛時計算工具</h2>
-<form>
-  <label>出發地
-    <select id="originType">
-      <option value="home">基地</option>
-      <option value="away">外站</option>
-    </select>
-  </label>
+<body><div class="container">
+  <h2>飛時計算工具</h2>
 
-  <label>報到 (UTC 日期+時間)
-    <input type="date" id="checkinDate">
-    <div class="time-row">
-      <select id="checkinHour"></select>
-      <span>:</span>
-      <select id="checkinMinute"></select>
-    </div>
-  </label>
+  <form>
+    <label>報到 (UTC 日期+時間)
+      <input type="date" id="checkinDate">
+      <div class="time-row">
+        <select id="checkinHour"></select>
+        <span>:</span>
+        <select id="checkinMinute"></select>
+      </div>
+    </label>
 
-  <label>任務結束 (UTC 日期+時間)
-    <input type="date" id="endDate">
-    <div class="time-row">
-      <select id="endHour"></select>
-      <span>:</span>
-      <select id="endMinute"></select>
-    </div>
-  </label>
+    <label>任務結束 (UTC 日期+時間)
+      <input type="date" id="endDate">
+      <div class="time-row">
+        <select id="endHour"></select>
+        <span>:</span>
+        <select id="endMinute"></select>
+      </div>
+    </label>
 
-  <label>Flight Time (飛行時間 總時:分)
-    <div class="time-row">
-      <select id="ftHour"></select>
-      <span>:</span>
-      <select id="ftMinute"></select>
-    </div>
-  </label>
+    <label>Flight Time (飛行時間 總時:分)
+      <div class="time-row">
+        <select id="ftHour"></select>
+        <span>:</span>
+        <select id="ftMinute"></select>
+      </div>
+    </label>
 
-  <label>組員人數
-    <select id="crew">
-      <option value="2">2</option>
-      <option value="3">3</option>
-      <option value="4">4</option>
-    </select>
-  </label>
+    <label>組員人數
+      <select id="crew">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+      </select>
+    </label>
 
-  <label>Class 1 休息裝備
-    <select id="class1">
-      <option value="yes">有</option>
-      <option value="no">無</option>
-    </select>
-  </label>
+    <label>Class 1 休息裝備
+      <select id="class1">
+        <option value="yes">有</option>
+        <option value="no">無</option>
+      </select>
+    </label>
 
-  <label>Next Duty (UTC 日期+時間)
-    <input type="date" id="nextDutyDate">
-    <div class="time-row">
-      <select id="nextDutyHour"></select>
-      <span>:</span>
-      <select id="nextDutyMinute"></select>
-    </div>
-  </label>
-</form>
-<button onclick="calculateAll()">計算</button>
-<button onclick="location.reload()">重置</button>
-<div class="result" id="result"></div>
-<div class="timeline" id="timeline"></div>
+    <label>Next Duty (UTC 日期+時間)
+      <input type="date" id="nextDutyDate">
+      <div class="time-row">
+        <select id="nextDutyHour"></select>
+        <span>:</span>
+        <select id="nextDutyMinute"></select>
+      </div>
+    </label>
+  </form>
+
+  <div style="margin-top: 10px;">
+    <button onclick="calculateAll()">計算</button>
+    <button onclick="location.reload()">重置</button>
+  </div>
+
+  <div class="result" id="result"></div>
+  <div class="timeline" id="timeline"></div>
+</div>
 <div class="notes">
   <h3>📌 備註事項</h3>
   <ul>
@@ -242,7 +258,6 @@ function calculateAll(){
     let mfdpLimit=crew===2?840:(crew===3?1080:1440);
     let maxRP=crew===2?(actualFT<=480?600:1080):(crew===3?(actualFT<=480?600:(actualFT<=720?1080:1440)):(actualFT<=480?600:(actualFT<=960?1080:1320)));
     let maxFT=crew===2?600:(crew===3?(class1?960:720):(class1?1080:720));
-    let isAway = document.getElementById("originType").value==="away";
     let rpStart = endDT;
 let nextDutyDate = document.getElementById("nextDutyDate").value;
 let ndH = parseInt(document.getElementById("nextDutyHour").value || "0", 10);
