@@ -68,7 +68,7 @@ function setDefaultDateToday(){
     document.getElementById("endDate").value = todayStr;
 
     // 預設 Next Duty 為 3 天後的同一時間
-    const nextDutyDate = new Date(today.getTime() + 3 * 24 * 60 * 60 * 1000);
+    const nextDutyDate = new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000);
     const nextDutyStr = nextDutyDate.toISOString().substring(0,10);
     document.getElementById("nextDutyDate").value = nextDutyStr;
     document.getElementById("nextDutyHour").value = pad(today.getUTCHours());
