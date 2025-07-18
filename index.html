@@ -5,213 +5,166 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>飛時計算工具</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    line-height: 1.8;
-    margin: 20px;
-    max-width: 1024px;
-    margin-left: auto;
-    margin-right: auto;
-  }
+    body { font-family: Arial, sans-serif; line-height: 2; margin: 20px; }
+    form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+  max-width: 900px;
+  margin: auto;
+}
+    label { display: flex; flex-direction: column; font-size: 14px; }
+    select, input[type="date"] {
+  padding: 8px 10px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+}
 
+    .result { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 20px; }
+    .alert { color: red; font-weight: bold; }
+    .timeline { margin-top: 40px; border-top: 2px solid #333; position: relative; height: 180px; max-width: 90%; }
+    .block { position: absolute; height: 30px; color: white; text-align: center; line-height: 30px; border-radius: 4px; font-size: 14px; }
+    .block.fdp { background: #4CAF50; top: -10px; }
+    .block.mfdp { background: #2196F3; top: 40px; }
+    .block.mrp { background: #FF9800; top: 70px; }
+    .block.rp { background: #555; top: 100px; }
+    .label { position: absolute; top: 160px; font-size: 13px; white-space: nowrap; }
+    .tick { position: absolute; top: -12px; height: 192px; border-left: 2px solid #555; }
+    .notes {
+  margin-top: 30px;
+  border-top: 1px dashed #aaa;
+  padding-top: 20px;
+  font-size: 14px;
+  max-width: 90%;
+}
+
+.notes ul {
+  padding-left: 20px;
+}
+
+.notes li {
+  margin-bottom: 10px;
+  line-height: 1.8;
+}
+    /* 時間欄位合併成一排 */
+.time-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.time-row select {
+  width: 70px;
+  font-size: 16px;
+  padding: 6px;
+}
+
+/* 響應式（iPad / 手機） */
+@media (max-width: 768px) {
   form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    align-items: flex-end;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   label {
-    display: flex;
-    flex-direction: column;
-    font-size: 15px;
-    min-width: 240px;
-    flex: 1;
-  }
-
-  input[type="date"],
-  select {
-    padding: 8px 6px;
-    font-size: 16px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    background-color: #f8f8f8;
     width: 100%;
   }
 
   .time-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    margin-top: 4px;
+    justify-content: flex-start;
   }
+}
+    button {
+  padding: 8px 20px;
+  font-size: 16px;
+  margin-right: 10px;
+  background-color: #2196F3;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #1976D2;
+}
 
-  .time-row select {
-    width: 60px;
-  }
-
-  button {
-    padding: 8px 16px;
-    font-size: 16px;
-    margin-top: 20px;
-  }
-
-  .button-group {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-    flex-wrap: wrap;
-  }
-
-  .notes {
-    margin-top: 40px;
-    border-top: 1px solid #aaa;
-    padding-top: 20px;
-  }
-
-  .notes img {
-    max-width: 100%;
-    border-radius: 6px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    margin-top: 20px;
-  }
-
-  @media (max-width: 768px) {
-    form {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    label {
-      width: 100%;
-    }
-
-    .time-row {
-      justify-content: flex-start;
-    }
-
-    .button-group {
-      width: 100%;
-      justify-content: flex-start;
-    }
-  }
-  .timeline {
-    position: relative;
-    margin-top: 40px;
-    border-top: 2px solid #333;
-    height: 60px;
-    width: 100%;
-  }
-
-  .block {
-    position: absolute;
-    height: 30px;
-    top: 0;
-    color: #fff;
-    text-align: center;
-    line-height: 30px;
-    font-size: 13px;
-    overflow: hidden;
-    white-space: nowrap;
-    padding: 0 4px;
-    border-radius: 4px;
-  }
-
-  .fdp { background-color: #4CAF50; }
-  .mfdp { background-color: #2196F3; }
-  .mrp { background-color: #FF9800; }
-  .rp { background-color: #9E9E9E; }
-
-  .label {
-    position: absolute;
-    top: 35px;
-    font-size: 12px;
-    white-space: nowrap;
-    transform: translateX(-50%);
-  }
-
-  .tick {
-    position: absolute;
-    top: 30px;
-    width: 1px;
-    height: 10px;
-    background-color: #333;
-  }
-
-  .alert {
-    color: red;
-    font-weight: bold;
-  }
-
-  .result p {
-    margin: 0;
-  }
+.button-group {
+  margin-top: 10px;
+}
+    .container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
 </style>
     
 </head>
-<body> 
+<body><div class="container">
   <h2>飛時計算工具</h2>
 
-<form>
-  <label>FDP開始 (UTC 日期+時間)
-    <input type="date" id="checkinDate">
-    <div class="time-row">
-      <select id="checkinHour"></select>
-      <span>:</span>
-      <select id="checkinMinute"></select>
-    </div>
-  </label>
+  <form>
+    <label>FDP開始 (UTC 日期+時間)
+      <input type="date" id="checkinDate">
+      <div class="time-row">
+        <select id="checkinHour"></select>
+        <span>:</span>
+        <select id="checkinMinute"></select>
+      </div>
+    </label>
 
-  <label>任務結束 (UTC 日期+時間)
-    <input type="date" id="endDate">
-    <div class="time-row">
-      <select id="endHour"></select>
-      <span>:</span>
-      <select id="endMinute"></select>
-    </div>
-  </label>
+    <label>任務結束 (UTC 日期+時間)
+      <input type="date" id="endDate">
+      <div class="time-row">
+        <select id="endHour"></select>
+        <span>:</span>
+        <select id="endMinute"></select>
+      </div>
+    </label>
 
-  <label>Flight Time (飛行時間 總時:分)
-    <div class="time-row">
-      <select id="ftHour"></select>
-      <span>:</span>
-      <select id="ftMinute"></select>
-    </div>
-  </label>
+    <label>Flight Time (飛行時間 總時:分)
+      <div class="time-row">
+        <select id="ftHour"></select>
+        <span>:</span>
+        <select id="ftMinute"></select>
+      </div>
+    </label>
 
-  <label>組員人數
-    <select id="crew">
-      <option value="2">2</option>
-      <option value="3">3</option>
-      <option value="4">4</option>
-    </select>
-  </label>
+    <label>組員人數
+      <select id="crew">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+      </select>
+    </label>
 
-  <label>Class 1 休息裝備
-    <select id="class1">
-      <option value="yes">有</option>
-      <option value="no">無</option>
-    </select>
-  </label>
+    <label>Class 1 休息裝備
+      <select id="class1">
+        <option value="yes">有</option>
+        <option value="no">無</option>
+      </select>
+    </label>
 
-  <label>Next Duty (UTC 日期+時間)
-    <input type="date" id="nextDutyDate">
-    <div class="time-row">
-      <select id="nextDutyHour"></select>
-      <span>:</span>
-      <select id="nextDutyMinute"></select>
-    </div>
-  </label>
+    <label>Next Duty (UTC 日期+時間)
+      <input type="date" id="nextDutyDate">
+      <div class="time-row">
+        <select id="nextDutyHour"></select>
+        <span>:</span>
+        <select id="nextDutyMinute"></select>
+      </div>
+    </label>
+  </form>
 
-  <div class="button-group">
-    <button id="calculate" type="button">計算</button>
-    <button type="reset">重置</button>
+  <div style="margin-top: 10px;">
+    <button onclick="calculateAll()">計算</button>
+    <button onclick="location.reload()">重置</button>
   </div>
-</form>
-
 
   <div class="result" id="result"></div>
   <div class="timeline" id="timeline"></div>
+</div>
 <div class="notes">
   <h3>📌 備註事項</h3>
   <ul>
@@ -221,14 +174,13 @@
     <li>增加 FDP 的方式：<br>
       └ First Flight Sector 之前有在 suitable accommodation 休息超過 3hr 就不算進 FDP Limitation，<br>
       └ First Flight Sector 之後，則可增加 1/2 休息時間進MFDP，但MFDP最多就是 24hr</li>
-    <li>時差 ≧6hr 的外站停留超過48hr，回基地後 48hr 內不能再派遣 Flight Duty，<br>
-      └ 除非又飛回同一個外站 or 與同一外站時差 3hr 內的地點，DHD 不在此限</li>
+    <li>時差≥6hr的外站停留超過48hr，回基地後 48hr 內不能再派遣 Flight Duty，<br>
+      └ 除非又飛回同一個外站 or 與同一外站時差 ≤3hr 的地點，DHD 不在此限</li>
     <li>FDP in Circadian（02L-05L）最多 3 天，<br>
       └ 連2 天要休 34hr，連3 天要休 54hr，<br>
       └ 或是每天FDP後休 14hr（最多還是3天）</li>
   </ul>
-  <img src="https://raw.githubusercontent.com/zihchi/flight-time/main/%E6%88%AA%E5%9C%96%202025-07-19%2000.05.25.png" alt="Duty Structure" style="max-width: 100%; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
-</div>
+  <img src="https://raw.githubusercontent.com/zihchi/flight-time/main/%E6%88%AA%E5%9C%96%202025-07-19%2000.05.25.png" alt="Duty Structure">
 </div>        
 <script>
 function pad(n){ return n.toString().padStart(2,'0'); }
@@ -331,4 +283,3 @@ let rpEnd = new Date(`${nextDutyDate}T${pad(ndH)}:${pad(ndM)}:00Z`);
 </script>
 </body>
 </html>
-
