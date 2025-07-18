@@ -277,12 +277,10 @@ let rpEnd = new Date(`${nextDutyDate}T${pad(ndH)}:${pad(ndM)}:00Z`);
     addBlock(((rpStart-checkinDT)/60000)/totalWidth*100,(maxRP/totalWidth)*100,`MRP ${Math.floor(maxRP/60)}h`,'mrp');
     addBlock(((rpStart-checkinDT)/60000)/totalWidth*100,((rpEnd-rpStart)/60000)/totalWidth*100,`RP ${Math.floor(actualRP/60)}h ${actualRP%60}m${actualRP<maxRP?' ⚠️ 不足':''}`,'rp');
     addTick(0); addTick((actualFDP/totalWidth)*100); addTick(((rpStart-checkinDT)/60000)/totalWidth*100); addTick(((rpEnd-checkinDT)/60000)/totalWidth*100); addTick(100);
-    addLabel(0,`FDP LIM開始 ${pad(checkinDT.getUTCMonth()+1)}/${pad(checkinDT.getUTCDate())} ${pad(checkinDT.getUTCHours())}:${pad(checkinDT.getUTCMinutes())}Z`);
-    addLabel((actualFDP/totalWidth)*100,`任務結束 ${pad(endDT.getUTCMonth()+1)}/${pad(endDT.getUTCDate())} ${pad(endDT.getUTCHours())}:${pad(endDT.getUTCMinutes())}Z`);
-    
-    addLabel(((rpEnd - checkinDT) / 60000) / totalWidth * 100,
-  `Next Duty ${pad(rpEnd.getUTCMonth()+1)}/${pad(rpEnd.getUTCDate())} ${pad(rpEnd.getUTCHours())}:${pad(rpEnd.getUTCMinutes())}Z`);
-
+    addLabel(0, `FDP LIM開始<br>${pad(checkinDT.getUTCMonth()+1)}/${pad(checkinDT.getUTCDate())} ${pad(checkinDT.getUTCHours())}:${pad(checkinDT.getUTCMinutes())}Z`);
+addLabel((actualFDP/totalWidth)*100, `任務結束<br>${pad(endDT.getUTCMonth()+1)}/${pad(endDT.getUTCDate())} ${pad(endDT.getUTCHours())}:${pad(endDT.getUTCMinutes())}Z`);
+addLabel(((rpEnd - checkinDT) / 60000) / totalWidth * 100,
+  `Next Duty<br>${pad(rpEnd.getUTCMonth()+1)}/${pad(rpEnd.getUTCDate())} ${pad(rpEnd.getUTCHours())}:${pad(rpEnd.getUTCMinutes())}Z`);
 }
 </script>
 </body>
