@@ -106,7 +106,7 @@ button:hover {
   <h2>飛時計算工具</h2>
 
   <form>
-    <label>FDP開始 (UTC 日期+時間)
+    <label>FDP LIM開始 (UTC 日期+時間)
       <input type="date" id="checkinDate">
       <div class="time-row">
         <select id="checkinHour"></select>
@@ -181,7 +181,7 @@ button:hover {
       └ 或是每天FDP後休 14hr（最多還是3天）</li>
   </ul>
     </div>
-<div style="margin-top: 100px; text-align: center;">
+<div style="margin-top: 100px;">
   <img src="https://raw.githubusercontent.com/zihchi/flight-time/main/%E6%88%AA%E5%9C%96%202025-07-19%2000.05.25.png"
        alt="Duty Structure"
        style="width: 90%; max-width: 1200px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
@@ -277,7 +277,7 @@ let rpEnd = new Date(`${nextDutyDate}T${pad(ndH)}:${pad(ndM)}:00Z`);
     addBlock(((rpStart-checkinDT)/60000)/totalWidth*100,(maxRP/totalWidth)*100,`MRP ${Math.floor(maxRP/60)}h`,'mrp');
     addBlock(((rpStart-checkinDT)/60000)/totalWidth*100,((rpEnd-rpStart)/60000)/totalWidth*100,`RP ${Math.floor(actualRP/60)}h ${actualRP%60}m${actualRP<maxRP?' ⚠️ 不足':''}`,'rp');
     addTick(0); addTick((actualFDP/totalWidth)*100); addTick(((rpStart-checkinDT)/60000)/totalWidth*100); addTick(((rpEnd-checkinDT)/60000)/totalWidth*100); addTick(100);
-    addLabel(0,`FDP開始 ${pad(checkinDT.getUTCMonth()+1)}/${pad(checkinDT.getUTCDate())} ${pad(checkinDT.getUTCHours())}:${pad(checkinDT.getUTCMinutes())}Z`);
+    addLabel(0,`FDP LIM開始 ${pad(checkinDT.getUTCMonth()+1)}/${pad(checkinDT.getUTCDate())} ${pad(checkinDT.getUTCHours())}:${pad(checkinDT.getUTCMinutes())}Z`);
     addLabel((actualFDP/totalWidth)*100,`任務結束 ${pad(endDT.getUTCMonth()+1)}/${pad(endDT.getUTCDate())} ${pad(endDT.getUTCHours())}:${pad(endDT.getUTCMinutes())}Z`);
     
     addLabel(((rpEnd - checkinDT) / 60000) / totalWidth * 100,
