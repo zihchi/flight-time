@@ -54,26 +54,28 @@
 </form>
 <button onclick="calculateAll()">計算</button>
 <button onclick="location.reload()">重置</button>
+<div class="result" id="result"></div>
+<div class="timeline" id="timeline"></div>
 <div class="notes">
   <h3>📌 備註事項</h3>
   <ul>
-    <li>待命前至少休 10hr</li>
     <li>FDP 從報到開始算，直到 Block with engine shutdown 或 Crew released</li>
-    <li>所有任務前 DP 都算 FDP</li>
-    <li>DHD after flight 不算進 FDP limitation，但會影響 RP 計算</li>
+    <li>臨時加人只能 before First Sector (FOM : 有起飛才算Sector開始)</li>
+    <li>DHD + Another Duty + FDP + 30min or Actual Work End + Another Duty 不得超過 Max FDP </li>
+    <li>Deadhead after flight 不影響 FDP limitation，也不算RP</li>
+    <li>外站的 Commute Time 不能算RP (check in to check out = RP)</li>
     <li>FDP 前的待命，如果沒在 suitable accommodation，也會算進 FDP，反之則不算</li>
-    <li>像我們在家待命那樣增加 FDP 的方式：<br>
-      └ First Flight Sector 之前有在 suitable accommodation 休息超過 3hr 就不算 FDP，<br>
-      └ 之後則可增加 1/2 休息進 FDP，但最多就是 24hr</li>
-    <li>待超過 48hr in 6 小時差，48hr 內不能再派遣，<br>
-      └ 除非又飛回同地方 or 同地方 3 小時差，DHD 不在此限</li>
+    <li>增加 FDP 的方式：<br>
+      └ First Flight Sector 之前有在 suitable accommodation 休息超過 3hr 就不算進 FDP Limitation，<br>
+      └ First Flight Sector 之後，則可增加 1/2 休息時間進MFDP，但MFDP最多就是 24hr</li>
+    <li>時差大於等於6hr的外站停留超過48hr，回基地後 48hr 內不能再派遣 Flight Duty，<br>
+      └ 除非又飛回同一個外站 or 與同一外站時差 3hr 內的地點，DHD 不在此限</li>
     <li>FDP in Circadian（02L-05L）最多 3 天，<br>
-      └ 2 天休 34hr，3 天休 54hr，<br>
-      └ 如果每次 FDP 後有休 14hr，則無此 3 天限制</li>
+      └ 連2 天要休 34hr，連3 天要休 54hr，<br>
+      └ 或是每天FDP後休 14hr（最多還是3天）</li>
+
   </ul>
-</div>    
-<div class="result" id="result"></div>
-<div class="timeline" id="timeline"></div>
+</div>        
 <script>
 function pad(n){ return n.toString().padStart(2,'0'); }
 function initSelectors(){
