@@ -213,8 +213,8 @@ function setDefaultDateToday(){
     document.getElementById("checkinDate").value = todayStr;
     document.getElementById("endDate").value = todayStr;
 
-    // 預設 Next Duty 為 3 天後的同一時間
-    const nextDutyDate = new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000);
+    // 預設 Next Duty 為 1 天後的同一時間
+    const nextDutyDate = new Date(today.getTime() + 1 * 24 * 60 * 60 * 1000);
     const nextDutyStr = nextDutyDate.toISOString().substring(0,10);
     document.getElementById("nextDutyDate").value = nextDutyStr;
     document.getElementById("nextDutyHour").value = pad(today.getUTCHours());
@@ -236,9 +236,10 @@ function addLabel(pos,text){
     const div=document.createElement('div');
     div.className='label';
     div.style.left=pos+'%';
-    div.textContent=text;
+    div.innerHTML=text;  // ✅可解析 <br>
     document.getElementById('timeline').appendChild(div);
 }
+
 function addTick(pos){
     const tick=document.createElement('div');
     tick.className='tick';
