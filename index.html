@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JX FDP & Rest Calculator v3.5</title>
+<title>JX FDP & Rest Calculator v3.6</title>
 <style>
     /* --- Core Styles --- */
     :root {
@@ -79,8 +79,7 @@
     .form-group { margin-bottom: 15px; }
     label { display: block; font-size: 0.75rem; font-weight: 700; color: #6b7280; margin-bottom: 5px; text-transform: uppercase; }
     
-    /* Standard Input Styling (Restored) */
-    select, input[type="date"], input[type="number"] {
+    select, input[type="number"] {
         width: 100%;
         padding: 8px 10px;
         font-size: 0.95rem;
@@ -97,9 +96,35 @@
     
     select:focus, input:focus { border-color: var(--jx-gold); }
 
+    /* Custom Date Input Styling (Hide Year) */
+    .date-wrapper {
+        position: relative;
+        flex: 2;
+        min-width: 100px;
+        height: 38px;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        background: #fff;
+        cursor: pointer;
+    }
+    .date-wrapper:hover { border-color: #9ca3af; }
+    .date-display {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        display: flex; align-items: center; padding-left: 10px;
+        font-family: monospace; font-size: 0.95rem; color: #111827;
+        pointer-events: none;
+    }
+    .date-input-hidden {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        opacity: 0;
+        cursor: pointer;
+        z-index: 10;
+    }
+
     /* Time Row */
     .time-row { display: flex; gap: 5px; align-items: center; }
-    .time-row input[type="date"] { flex: 2; min-width: 120px; cursor: pointer; }
     .time-row select { flex: 1; min-width: 55px; font-weight: bold; cursor: pointer; }
     .colon { font-weight: bold; color: #9ca3af; }
 
@@ -200,6 +225,18 @@
 
     .notes { background: #f3f4f6; padding: 15px; border-radius: 6px; margin-top: 20px; font-size: 0.85rem; color: #4b5563; border: 1px solid #e5e7eb; }
     .notes ul { padding-left: 20px; margin: 5px 0; }
+    
+    /* 3-Crew Reminder Style */
+    #crew3Msg { 
+        font-size: 0.75rem; 
+        color: #d97706; 
+        background: #fffbeb; 
+        padding: 8px; 
+        border: 1px dashed #f59e0b; 
+        border-radius: 4px; 
+        margin-top: 5px; 
+        line-height: 1.4;
+    }
 </style>
 </head>
 <body>
@@ -209,10 +246,10 @@
     <!-- Header -->
     <div class="header">
         <div>
-            <div class="title"><i>✈</i> JX FDP & Rest Tool v3.5</div>
+            <div class="title"><i>✈</i> JX FDP & Rest Tool v3.6</div>
             <div class="subtitle">OMA Ch.4 Logic</div>
         </div>
-        <div style="font-size:0.8rem; color:#999;">Added "Following DHD" Logic</div>
+        <div style="font-size:0.8rem; color:#999;">Compact Layout & Reminders</div>
     </div>
 
     <div class="main-grid">
@@ -228,6 +265,10 @@
                     <option value="3">3 人 (Multiple Crew)</option>
                     <option value="4">4 人 (Double Crew)</option>
                 </select>
+                <!-- 3 Crew Reminder -->
+                <p id="crew3Msg" class="hidden">
+                    <i class="fas fa-exclamation-circle"></i> 不可抗力因素且PIC同意，可以增加 2hr Max FDP。
+                </p>
             </div>
 
             <div id="class1Box" class="form-group hidden">
@@ -281,7 +322,11 @@
                         <label class="radio-label"><input type="radio" name="startType" value="other" onchange="updateRadioStyles()">Other Duty</label>
                     </div>
                     <div class="time-row">
-                        <input type="date" id="reportDate">
+                        <!-- Custom Date Input -->
+                        <div class="date-wrapper">
+                            <div class="date-display" id="disp_reportDate">MM/DD</div>
+                            <input type="date" id="reportDate" class="date-input-hidden" onchange="updateDateDisplay('reportDate')">
+                        </div>
                         <select id="reportHour"></select>
                         <select id="reportMinute"></select>
                     </div>
@@ -291,11 +336,15 @@
                 <div class="form-group">
                     <label style="color:var(--color-success);">FDP End Time</label>
                     <div class="radio-group" id="endTypeGroup">
-                        <label class="radio-label selected"><input type="radio" name="endType" value="block30" checked onchange="updateRadioStyles()">Block-In + 30min</label>
+                        <label class="radio-label selected"><input type="radio" name="endType" value="block30" checked onchange="updateRadioStyles()">Block-In +30min</label>
                         <label class="radio-label"><input type="radio" name="endType" value="actual" onchange="updateRadioStyles()">Actual End</label>
                     </div>
                     <div class="time-row">
-                        <input type="date" id="releaseDate">
+                        <!-- Custom Date Input -->
+                        <div class="date-wrapper">
+                            <div class="date-display" id="disp_releaseDate">MM/DD</div>
+                            <input type="date" id="releaseDate" class="date-input-hidden" onchange="updateDateDisplay('releaseDate')">
+                        </div>
                         <select id="releaseHour"></select>
                         <select id="releaseMinute"></select>
                     </div>
@@ -326,7 +375,10 @@
                     <div id="dhdInputBox" class="form-group hidden" style="background:rgba(255,255,255,0.6); padding:10px; border-radius:6px; border:1px dashed #d97706; margin-bottom:15px;">
                         <label style="color:#d97706;">DHD End Time (Rest Start)</label>
                         <div class="time-row">
-                            <input type="date" id="dhdEndDate">
+                            <div class="date-wrapper">
+                                <div class="date-display" id="disp_dhdEndDate">MM/DD</div>
+                                <input type="date" id="dhdEndDate" class="date-input-hidden" onchange="updateDateDisplay('dhdEndDate')">
+                            </div>
                             <select id="dhdEndHour"></select>
                             <select id="dhdEndMinute"></select>
                         </div>
@@ -335,7 +387,10 @@
                     <div class="form-group">
                         <label style="color:var(--color-info);">Next Duty Report</label>
                         <div class="time-row">
-                            <input type="date" id="nextReportDate">
+                            <div class="date-wrapper">
+                                <div class="date-display" id="disp_nextReportDate">MM/DD</div>
+                                <input type="date" id="nextReportDate" class="date-input-hidden" onchange="updateDateDisplay('nextReportDate')">
+                            </div>
                             <select id="nextReportHour"></select>
                             <select id="nextReportMinute"></select>
                         </div>
@@ -351,7 +406,10 @@
                         <div class="form-group">
                             <label style="color:#4b5563;">Hotel Check-in</label>
                             <div class="time-row">
-                                <input type="date" id="hotelInDate">
+                                <div class="date-wrapper">
+                                    <div class="date-display" id="disp_hotelInDate">MM/DD</div>
+                                    <input type="date" id="hotelInDate" class="date-input-hidden" onchange="updateDateDisplay('hotelInDate')">
+                                </div>
                                 <select id="hotelInHour"></select>
                                 <select id="hotelInMinute"></select>
                             </div>
@@ -359,7 +417,10 @@
                         <div class="form-group">
                             <label style="color:#4b5563;">Hotel Check-out</label>
                             <div class="time-row">
-                                <input type="date" id="hotelOutDate">
+                                <div class="date-wrapper">
+                                    <div class="date-display" id="disp_hotelOutDate">MM/DD</div>
+                                    <input type="date" id="hotelOutDate" class="date-input-hidden" onchange="updateDateDisplay('hotelOutDate')">
+                                </div>
                                 <select id="hotelOutHour"></select>
                                 <select id="hotelOutMinute"></select>
                             </div>
@@ -428,7 +489,7 @@
 </div>
 
 <script>
-/* --- LOGIC V3.5 --- */
+/* --- LOGIC V3.6 --- */
 const pad = (n) => n.toString().padStart(2, '0');
 const fmt = (m) => `${Math.floor(m/60)}:${pad(m%60)}`;
 
@@ -458,7 +519,10 @@ function setDefaults() {
     // Initial Date Set
     ["reportDate", "releaseDate", "nextReportDate", "hotelInDate", "hotelOutDate", "dhdEndDate"].forEach(id => {
         const el = document.getElementById(id);
-        if(el) el.value = today;
+        if(el) {
+            el.value = today;
+            updateDateDisplay(id);
+        }
     });
 
     document.getElementById('reportHour').value = pad(now.getUTCHours());
@@ -466,20 +530,39 @@ function setDefaults() {
     // Release +8h
     const rel = new Date(now.getTime() + 8*3600000);
     document.getElementById('releaseDate').value = rel.toISOString().split('T')[0];
+    updateDateDisplay('releaseDate');
     document.getElementById('releaseHour').value = pad(rel.getUTCHours());
     
     // DHD End +9h
     const dhd = new Date(now.getTime() + 9*3600000);
     document.getElementById('dhdEndDate').value = dhd.toISOString().split('T')[0];
+    updateDateDisplay('dhdEndDate');
     document.getElementById('dhdEndHour').value = pad(dhd.getUTCHours());
 
     // Next Report +24h
     const next = new Date(rel.getTime() + 24*3600000);
     document.getElementById('nextReportDate').value = next.toISOString().split('T')[0];
+    updateDateDisplay('nextReportDate');
     document.getElementById('nextReportHour').value = pad(next.getUTCHours());
     
     // FT 7h
     document.getElementById('ftHour').value = "07";
+}
+
+// Custom Date Display Logic (MM/DD)
+function updateDateDisplay(inputId) {
+    const input = document.getElementById(inputId);
+    const disp = document.getElementById('disp_' + inputId);
+    if(input.value) {
+        const parts = input.value.split('-'); // [YYYY, MM, DD]
+        if(parts.length === 3) {
+            disp.innerText = `${parts[1]}/${parts[2]}`; // MM/DD
+            disp.style.color = "#111827";
+        }
+    } else {
+        disp.innerText = "MM/DD";
+        disp.style.color = "#9ca3af";
+    }
 }
 
 function updateRadioStyles() {
@@ -493,8 +576,15 @@ function updateRadioStyles() {
 function updateUI() {
     const crew = document.getElementById('crew').value;
     const c1Box = document.getElementById('class1Box');
+    const msg = document.getElementById('crew3Msg');
+    
+    // Class 1 toggle
     if(crew === "2") c1Box.classList.add('hidden');
     else c1Box.classList.remove('hidden');
+
+    // 3-Crew Reminder toggle
+    if(crew === "3") msg.classList.remove('hidden');
+    else msg.classList.add('hidden');
 }
 
 function toggleDHD() {
@@ -541,8 +631,8 @@ function calculate() {
         return new Date(`${d}T${h}:${m}:00Z`);
     };
 
-    const report = getDT('report'); // Now FDP Start
-    const release = getDT('release'); // Now FDP End
+    const report = getDT('report');
+    const release = getDT('release');
     
     if(!report || !release) throw new Error("請輸入完整的 FDP Start/End 時間");
     if(release <= report) throw new Error("FDP End 時間必須晚於 Start 時間");
@@ -599,7 +689,7 @@ function calculate() {
         actRest = (restEnd - restStart)/60000;
     }
 
-    // Min Rest Limit (Table 4.7.5)
+    // Min Rest Limit
     let minRestH = 0;
     const ftH = actFT / 60;
     if(crew === "2") minRestH = (ftH <= 8) ? 10 : 18;
@@ -633,11 +723,7 @@ function drawTimeline(rep, rel, rStart, rEnd, actFDP, maxFDP, minRest, hasDHD, d
     const container = document.getElementById('timeline');
     container.innerHTML = "";
     
-    // Canvas settings
-    const minRestPoint = new Date(rel.getTime() + minRest*60000); // Usually calculated from FDP end? Or Duty End?
-    // OMA: Rest is dependent on FDP, but starts after Duty. 
-    // Usually table 4.7.5 is based on flight time. Rest Period definition is clearance from duty.
-    // So visual Min Rest should start from rStart (Duty End)
+    const minRestPoint = new Date(rel.getTime() + minRest*60000); 
     const minRestStartPoint = rStart;
     const minRestEndPoint = new Date(minRestStartPoint.getTime() + minRest*60000);
 
@@ -674,7 +760,7 @@ function drawTimeline(rep, rel, rStart, rEnd, actFDP, maxFDP, minRest, hasDHD, d
     addBlock(getX(rep), getW(actFDP), `FDP ${fmt(actFDP)}`, "bg-fdp" + (actFDP > maxFDP ? " violation":""));
     addBlock(getX(rep), getW(maxFDP), `Max ${fmt(maxFDP)}`, "bg-mfdp");
 
-    // DHD Sector (if any)
+    // DHD
     if(hasDHD && dhdEnd) {
         const dhdDur = (dhdEnd - rel)/60000;
         addBlock(getX(rel), getW(dhdDur), `DHD ${fmt(dhdDur)}`, "bg-dhd");
