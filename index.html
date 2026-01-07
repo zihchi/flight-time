@@ -302,7 +302,7 @@
                     <div class="radio-group" id="startTypeGroup">
                         <label class="radio-label selected"><input type="radio" name="startType" value="report" checked onchange="updateRadioStyles()">Report</label>
                         <label class="radio-label"><input type="radio" name="startType" value="dhd" onchange="updateRadioStyles()">DHD</label>
-                        <label class="radio-label"><input type="radio" name="startType" value="other" onchange="updateRadioStyles()">Other</label>
+                        <label class="radio-label"><input type="radio" name="startType" value="other" onchange="updateRadioStyles()">Other Duty</label>
                     </div>
                     <div class="time-row">
                         <!-- Custom Date Input -->
@@ -319,7 +319,7 @@
                 <div class="form-group">
                     <label style="color:var(--color-success);">FDP End Time</label>
                     <div class="radio-group" id="endTypeGroup">
-                        <label class="radio-label selected"><input type="radio" name="endType" value="block30" checked onchange="updateRadioStyles()">Block-In + 30</label>
+                        <label class="radio-label selected"><input type="radio" name="endType" value="block30" checked onchange="updateRadioStyles()">Block-In + 30min</label>
                         <label class="radio-label"><input type="radio" name="endType" value="actual" onchange="updateRadioStyles()">Actual End</label>
                     </div>
                     <div class="time-row">
@@ -343,7 +343,7 @@
                 <!-- Home Base UI -->
                 <div id="uiHome">
                     <p style="font-size:0.8rem; color:#6b7280; margin-bottom:10px;">
-                        Logic: From FDP End Time to Next Report.
+                        Logic: From FDP End Time or Following DHD to Next Report.
                     </p>
                     <div class="form-group">
                         <label style="color:var(--color-info);">Next Duty Report</label>
