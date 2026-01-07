@@ -3,286 +3,718 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>飛時計算工具</title>
+<title>JX FDP & Rest Calculator v3.3</title>
 <style>
-    body { font-family: Arial, sans-serif; line-height: 2; margin: 20px; }
-    form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  align-items: center;
-  max-width: 900px;
-  margin: auto;
-}
-    label { display: flex; flex-direction: column; font-size: 14px; }
-    select, input[type="date"] {
-  padding: 8px 10px;
-  font-size: 16px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background-color: #f9f9f9;
-}
+    /* --- Core Styles --- */
+    :root {
+        --jx-gold: #bfa276;
+        --jx-gold-dark: #9f8358;
+        --jx-gray: #1f2937;
+        --bg-color: #f9fafb;
+        --panel-bg: #ffffff;
+        --border-color: #e5e7eb;
+        --color-success: #10b981;
+        --color-danger: #ef4444;
+        --color-info: #3b82f6;
+    }
 
-    .result { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 20px; }
-    .alert { color: red; font-weight: bold; }
-    .timeline { margin-top: 40px; border-top: 2px solid #333; position: relative; height: 180px; max-width: 90%; }
-    .block { position: absolute; height: 30px; color: white; text-align: center; line-height: 30px; border-radius: 4px; font-size: 14px; }
-    .block.fdp { background: #4CAF50; top: -10px; }
-    .block.mfdp { background: #2196F3; top: 40px; }
-    .block.mrp { background: #FF9800; top: 70px; }
-    .block.rp { background: #555; top: 100px; }
-    .label { position: absolute; top: 160px; font-size: 13px; white-space: nowrap; }
-    .tick { position: absolute; top: -12px; height: 192px; border-left: 2px solid #555; }
-    .notes {
-  margin-top: 30px;
-  border-top: 1px dashed #aaa;
-  padding-top: 20px;
-  font-size: 14px;
-  max-width: 90%;
-}
+    * { box-sizing: border-box; }
+    
+    body { 
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--jx-gray);
+        margin: 0;
+        padding: 20px;
+        line-height: 1.5;
+    }
 
-.notes ul {
-  padding-left: 20px;
-}
+    .container { max-width: 1000px; margin: 0 auto; }
+    .hidden { display: none !important; }
 
-.notes li {
-  margin-bottom: 10px;
-  line-height: 1.8;
-}
-    /* 時間欄位合併成一排 */
-.time-row {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
+    /* Header */
+    .header {
+        background: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-bottom: 3px solid var(--jx-gold);
+        border-radius: 8px;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .title { font-size: 1.4rem; font-weight: 800; color: #111827; display: flex; align-items: center; letter-spacing: 0.5px; }
+    .title i { color: var(--jx-gold); margin-right: 10px; font-style: normal; font-size: 1.6rem; }
+    .subtitle { font-size: 0.8rem; color: #6b7280; font-weight: 500; margin-left: 38px; margin-top: -5px; }
 
-.time-row select {
-  width: 70px;
-  font-size: 16px;
-  padding: 6px;
-}
+    /* Layout */
+    .main-grid { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+    @media (max-width: 850px) { .main-grid { grid-template-columns: 1fr; } }
 
-/* 響應式（iPad / 手機） */
-@media (max-width: 768px) {
-  form {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+    /* Panels */
+    .panel {
+        background: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        height: 100%;
+    }
+    .panel-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #4b5563;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--jx-gold);
+        padding-bottom: 8px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
 
-  label {
-    width: 100%;
-  }
+    /* Forms */
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-size: 0.75rem; font-weight: 700; color: #6b7280; margin-bottom: 5px; text-transform: uppercase; }
+    
+    select, input[type="number"] {
+        width: 100%;
+        padding: 8px 10px;
+        font-size: 0.95rem;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        background-color: #fff;
+        color: #111827;
+        outline: none;
+        transition: border-color 0.2s;
+        font-family: monospace; 
+        -webkit-appearance: none; appearance: none;
+    }
+    select { background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; }
+    select:focus, input:focus { border-color: var(--jx-gold); }
 
-  .time-row {
-    justify-content: flex-start;
-  }
-}
-    button {
-  padding: 8px 20px;
-  font-size: 16px;
-  margin-right: 10px;
-  background-color: #2196F3;
-  border: none;
-  color: white;
-  border-radius: 4px;
-  cursor: pointer;
-}
-button:hover {
-  background-color: #1976D2;
-}
+    /* Custom Date Input Styling (Hide Year) */
+    .date-wrapper {
+        position: relative;
+        flex: 2;
+        min-width: 100px;
+        height: 38px; /* Match select height */
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        background: #fff;
+        cursor: pointer;
+    }
+    .date-wrapper:hover { border-color: #9ca3af; }
+    .date-display {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        display: flex; align-items: center; padding-left: 10px;
+        font-family: monospace; font-size: 0.95rem; color: #111827;
+        pointer-events: none; /* Let clicks pass to input */
+    }
+    .date-input-hidden {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        opacity: 0; /* Hide the native input but keep it clickable */
+        cursor: pointer;
+        z-index: 10;
+    }
 
-.button-group {
-  margin-top: 10px;
-}
-    .container {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
+    /* Time Row */
+    .time-row { display: flex; gap: 5px; align-items: center; }
+    .time-row select { flex: 1; min-width: 55px; font-weight: bold; cursor: pointer; }
+    .colon { font-weight: bold; color: #9ca3af; }
+
+    /* Radio Group Styling */
+    .radio-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 5px;
+        margin-bottom: 8px;
+    }
+    .radio-label {
+        display: flex;
+        align-items: center;
+        font-size: 0.7rem;
+        font-weight: 500;
+        color: #4b5563;
+        cursor: pointer;
+        background: #f3f4f6;
+        padding: 2px 8px;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+    }
+    .radio-label:hover { background: #e5e7eb; }
+    .radio-label input { margin-right: 5px; cursor: pointer; }
+    
+    /* Active Radio Style */
+    .radio-label.selected {
+        background: #fef3c7; /* light yellow */
+        border-color: var(--jx-gold);
+        color: #92400e;
+    }
+
+    /* Buttons & Toggles */
+    .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.2s; }
+    .btn-gold { background: linear-gradient(to right, #d4b077, #bfa276); color: white; box-shadow: 0 2px 4px rgba(191, 162, 118, 0.2); }
+    .btn-gold:hover { background: linear-gradient(to right, #bfa276, #9f8358); }
+    
+    .mode-switch {
+        display: flex;
+        background: #f3f4f6;
+        padding: 4px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+    }
+    .mode-btn {
+        flex: 1;
+        text-align: center;
+        padding: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: 4px;
+        color: #6b7280;
+        transition: all 0.2s;
+    }
+    .mode-btn.active { background: white; color: var(--jx-gold-dark); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+
+    /* Rest Section Styling */
+    .rest-section {
+        background: #fffbeb;
+        border: 1px solid #fcd34d;
+        border-radius: 6px;
+        padding: 15px;
+        margin-top: 20px;
+    }
+    .rest-header { font-size: 0.8rem; font-weight: 700; color: #b45309; margin-bottom: 10px; display: flex; align-items: center; }
+    .rest-header i { margin-right: 6px; }
+
+    /* Results */
+    .result-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
+    .res-card { background: white; padding: 15px; border-radius: 6px; border: 1px solid #e5e7eb; border-left: 4px solid #ccc; }
+    .res-card.ok { border-left-color: var(--color-success); }
+    .res-card.warn { border-left-color: var(--color-danger); }
+    .res-title { font-size: 0.7rem; color: #6b7280; text-transform: uppercase; font-weight: 700; margin-bottom: 5px; }
+    .res-val { font-size: 1.6rem; font-weight: 700; font-family: monospace; color: #111827; }
+    .res-sub { font-size: 0.75rem; color: #6b7280; margin-top: 5px; }
+
+    /* Timeline */
+    .timeline-box { margin-top: 20px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; }
+    .timeline-container { position: relative; height: 180px; background: #f9fafb; border-top: 2px solid #9ca3af; margin-top: 30px; overflow-x: auto; }
+    
+    .block { position: absolute; height: 30px; line-height: 30px; text-align: center; color: white; font-size: 12px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; z-index: 2; font-weight: 500; }
+    
+    .bg-fdp { background: var(--color-success); top: 10px; }
+    .bg-mfdp { background: repeating-linear-gradient(45deg, #60a5fa, #60a5fa 10px, #3b82f6 10px, #3b82f6 20px); top: 50px; opacity: 0.9; }
+    .bg-mrp { background: repeating-linear-gradient(45deg, #fbbf24, #fbbf24 10px, #f59e0b 10px, #f59e0b 20px); top: 90px; opacity: 0.9; }
+    .bg-rp { background: #4b5563; top: 130px; } /* Actual Rest */
+    
+    .violation { background: var(--color-danger) !important; }
+
+    .tick { position: absolute; top: 0; height: 100%; border-left: 1px dashed #9ca3af; pointer-events: none; z-index: 1; }
+    .tick-label { position: absolute; top: 155px; transform: translateX(-50%); font-size: 11px; background: #fff; padding: 2px 6px; border: 1px solid #e5e7eb; border-radius: 3px; color: #4b5563; text-align: center; z-index: 4; }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 15px; font-size: 0.8rem; color: #4b5563; }
+    .leg-dot { width: 12px; height: 12px; border-radius: 2px; margin-right: 5px; display: inline-block; }
+
+    .notes { background: #f3f4f6; padding: 15px; border-radius: 6px; margin-top: 20px; font-size: 0.85rem; color: #4b5563; border: 1px solid #e5e7eb; }
+    .notes ul { padding-left: 20px; margin: 5px 0; }
 </style>
-    
 </head>
-<body><div class="container">
-  <h2>飛時計算工具</h2>
+<body>
 
-  <form>
-    <label>FDP LIM開始 (UTC 日期+時間)
-      <input type="date" id="checkinDate">
-      <div class="time-row">
-        <select id="checkinHour"></select>
-        <span>:</span>
-        <select id="checkinMinute"></select>
-      </div>
-    </label>
-
-    <label>FDP LIM結束 (UTC 日期+時間)
-      <input type="date" id="endDate">
-      <div class="time-row">
-        <select id="endHour"></select>
-        <span>:</span>
-        <select id="endMinute"></select>
-      </div>
-    </label>
-
-    <label>Flight Time (Block in/out 時:分)
-      <div class="time-row">
-        <select id="ftHour"></select>
-        <span>:</span>
-        <select id="ftMinute"></select>
-      </div>
-    </label>
-
-    <label>組員人數
-      <select id="crew">
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-      </select>
-    </label>
-
-    <label>Class 1 休息裝備
-      <select id="class1">
-        <option value="yes">有</option>
-        <option value="no">無</option>
-      </select>
-    </label>
-
-    <label>Next Duty (UTC 日期+時間)
-      <input type="date" id="nextDutyDate">
-      <div class="time-row">
-        <select id="nextDutyHour"></select>
-        <span>:</span>
-        <select id="nextDutyMinute"></select>
-      </div>
-    </label>
-  </form>
-
-  <div style="margin-top: 10px;">
-    <button onclick="calculateAll()">計算</button>
-    <button onclick="location.reload()">重置</button>
-  </div>
-
-  <div class="result" id="result"></div>
-  <div class="timeline" id="timeline"></div>
-</div>
-<div class="notes">
-  <h3>📌 備註事項</h3>
-  <ul>
-    <li>FDP 從報到開始算，直到 Block with engine shutdown 或 Crew released</li>
-    <li>臨時加人只能 before First Sector (FOM : 有起飛才算Sector開始)</li>
-    <li>FDP 前的待命，如果沒在 suitable accommodation，也會算進 FDP，反之則不算</li>
-    <li>增加 FDP 的方式：<br>
-      └ First Flight Sector 之前有在 suitable accommodation 休息超過 3hr 就不算進 FDP Limitation，<br>
-      └ First Flight Sector 之後，則可增加 1/2 休息時間進MFDP，但MFDP最多就是 24hr</li>
-    <li>時差≥6hr的外站停留超過48hr，回基地後 48hr 內不能再派遣 Flight Duty，<br>
-      └ 除非又飛回同一個外站 or 與同一外站時差 ≤3hr 的地點，DHD 不在此限</li>
-    <li>FDP in Circadian（02L-05L）最多 3 天，<br>
-      └ 連2 天要休 34hr，連3 天要休 54hr，<br>
-      └ 或是每天FDP後休 14hr（最多還是3天）</li>
-  </ul>
-    </div>
-<div style="margin-top: 100px;">
-  <img src="https://raw.githubusercontent.com/zihchi/flight-time/main/%E6%88%AA%E5%9C%96%202025-07-19%2000.05.25.png"
-       alt="Duty Structure"
-       style="width: 90%; max-width: 1200px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
-</div>        
-<script>
-function pad(n){ return n.toString().padStart(2,'0'); }
-function initSelectors(){
-    const hourIds = ["checkinHour","endHour","ftHour","nextDutyHour"];
-    const minuteIds = ["checkinMinute","endMinute","ftMinute","nextDutyMinute"];
-
-for (let id of hourIds) {
-    const select = document.getElementById(id);
-    for (let i = 0; i < 24; i++) {
-        select.append(new Option(pad(i), i));
-    }
-}
-
-for (let id of minuteIds) {
-    const select = document.getElementById(id);
-    for (let i = 0; i < 60; i++) {
-        select.append(new Option(pad(i), i));
-    }
-}
-}
-
-function setDefaultDateToday(){
-    const today = new Date();
-    const todayStr = today.toISOString().substring(0,10);
-    document.getElementById("checkinDate").value = todayStr;
-    document.getElementById("endDate").value = todayStr;
-
-    // 預設 Next Duty 為 1 天後的同一時間
-    const nextDutyDate = new Date(today.getTime() + 1 * 24 * 60 * 60 * 1000);
-    const nextDutyStr = nextDutyDate.toISOString().substring(0,10);
-    document.getElementById("nextDutyDate").value = nextDutyStr;
-    document.getElementById("nextDutyHour").value = pad(today.getUTCHours());
-    document.getElementById("nextDutyMinute").value = pad(today.getUTCMinutes());
-}
-document.addEventListener("DOMContentLoaded",()=>{
-    initSelectors();
-    setDefaultDateToday();    
-});
-function addBlock(start,width,text,cls){
-    const div=document.createElement('div');
-    div.className='block '+cls;
-    div.style.left=start+'%';
-    div.style.width=width+'%';
-    div.textContent=text;
-    document.getElementById('timeline').appendChild(div);
-}
-function addLabel(pos,text){
-    const div=document.createElement('div');
-    div.className='label';
-    div.style.left=pos+'%';
-    div.innerHTML=text;  // ✅可解析 <br>
-    document.getElementById('timeline').appendChild(div);
-}
-
-function addTick(pos){
-    const tick=document.createElement('div');
-    tick.className='tick';
-    tick.style.left=pos+'%';
-    document.getElementById('timeline').appendChild(tick);
-}
-function calculateAll(){
-    let cD=document.getElementById('checkinDate').value,eD=document.getElementById('endDate').value;
-    let cH=parseInt(document.getElementById('checkinHour').value),cM=parseInt(document.getElementById('checkinMinute').value);
-    let eH=parseInt(document.getElementById('endHour').value),eM=parseInt(document.getElementById('endMinute').value);
-    let checkinDT=new Date(`${cD}T${pad(cH)}:${pad(cM)}:00Z`);
-    let endDT=new Date(`${eD}T${pad(eH)}:${pad(eM)}:00Z`);
-    let crew=parseInt(document.getElementById('crew').value);
-    let class1=document.getElementById('class1').value==="yes";
-    let ftH=parseInt(document.getElementById('ftHour').value), ftM=parseInt(document.getElementById('ftMinute').value);
-    let actualFDP=(endDT-checkinDT)/60000;
-    let actualFT=ftH*60+ftM;
-    let mfdpLimit=crew===2?840:(crew===3?1080:1440);
-    let maxRP=crew===2?(actualFT<=480?600:1080):(crew===3?(actualFT<=480?600:(actualFT<=720?1080:1440)):(actualFT<=480?600:(actualFT<=960?1080:1320)));
-    let maxFT=crew===2?600:(crew===3?(class1?960:720):(class1?1080:720));
-    let rpStart = endDT;
-let nextDutyDate = document.getElementById("nextDutyDate").value;
-let ndH = parseInt(document.getElementById("nextDutyHour").value || "0", 10);
-let ndM = parseInt(document.getElementById("nextDutyMinute").value || "0", 10);
-let rpEnd = new Date(`${nextDutyDate}T${pad(ndH)}:${pad(ndM)}:00Z`);
+<div class="container">
     
-    let actualRP = (rpEnd - rpStart) / 60000;
-    let result=`<p${actualFDP>mfdpLimit?' class="alert"':''}>FDP: ${Math.floor(actualFDP/60)}h ${actualFDP%60}m / MFDP: ${Math.floor(mfdpLimit/60)}h${actualFDP>mfdpLimit?' ⚠️ 超過限制':''}</p>`;
-    result+=`<p${actualFT>maxFT?' class="alert"':''}>FT: ${Math.floor(actualFT/60)}h ${actualFT%60}m / Max FT: ${Math.floor(maxFT/60)}h${actualFT>maxFT?' ⚠️ 超過限制':''}</p>`;
-    result+=`<p${actualRP<maxRP?' class="alert"':''}>RP: ${Math.floor(actualRP/60)}h ${actualRP%60}m / MRP: ${Math.floor(maxRP/60)}h${actualRP<maxRP?' ⚠️ 不足':''}</p>`;
-    document.getElementById('result').innerHTML=result;
-    const timeline=document.getElementById('timeline');timeline.innerHTML='';
-    const totalWidth=(rpEnd-checkinDT)/60000;
-    addBlock(0,(actualFDP/totalWidth)*100,`FDP ${Math.floor(actualFDP/60)}h ${actualFDP%60}m`,'fdp');
-    addBlock(0,(mfdpLimit/totalWidth)*100,`MFDP ${Math.floor(mfdpLimit/60)}h`,'mfdp');
-    addBlock(((rpStart-checkinDT)/60000)/totalWidth*100,(maxRP/totalWidth)*100,`MRP ${Math.floor(maxRP/60)}h`,'mrp');
-    addBlock(((rpStart-checkinDT)/60000)/totalWidth*100,((rpEnd-rpStart)/60000)/totalWidth*100,`RP ${Math.floor(actualRP/60)}h ${actualRP%60}m${actualRP<maxRP?' ⚠️ 不足':''}`,'rp');
-    addTick(0); addTick((actualFDP/totalWidth)*100); addTick(((rpStart-checkinDT)/60000)/totalWidth*100); addTick(((rpEnd-checkinDT)/60000)/totalWidth*100); addTick(100);
-    addLabel(0, `FDP LIM開始<br>${pad(checkinDT.getUTCMonth()+1)}/${pad(checkinDT.getUTCDate())} ${pad(checkinDT.getUTCHours())}:${pad(checkinDT.getUTCMinutes())}Z`);
-addLabel((actualFDP/totalWidth)*100, `FDP LIM<br>${pad(endDT.getUTCMonth()+1)}/${pad(endDT.getUTCDate())} ${pad(endDT.getUTCHours())}:${pad(endDT.getUTCMinutes())}Z`);
-addLabel(((rpEnd - checkinDT) / 60000) / totalWidth * 100,
-  `Next Duty<br>${pad(rpEnd.getUTCMonth()+1)}/${pad(rpEnd.getUTCDate())} ${pad(rpEnd.getUTCHours())}:${pad(rpEnd.getUTCMinutes())}Z`);
+    <!-- Header -->
+    <div class="header">
+        <div>
+            <div class="title"><i>✈</i> JX FDP & Rest Tool v3.3</div>
+            <div class="subtitle">OMA Ch.4 Logic</div>
+        </div>
+        <div style="font-size:0.8rem; color:#999;">Updated Labels & Date View</div>
+    </div>
+
+    <div class="main-grid">
+        
+        <!-- LEFT: Settings -->
+        <div class="panel">
+            <div class="panel-title"><span>⚙</span>派遣設定</div>
+            
+            <div class="form-group">
+                <label>組員人數 (Crew)</label>
+                <select id="crew" onchange="updateUI()">
+                    <option value="2">2 人 (Single Crew)</option>
+                    <option value="3">3 人 (Multiple Crew)</option>
+                    <option value="4">4 人 (Double Crew)</option>
+                </select>
+            </div>
+
+            <div id="class1Box" class="form-group hidden">
+                <label>Class 1 休息設施</label>
+                <select id="class1">
+                    <option value="yes">有 (Yes)</option>
+                    <option value="no">無 (No)</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="border-top:1px solid #eee; padding-top:15px;">
+                <label>飛行時間 (Flight Time)</label>
+                <div class="time-row">
+                    <select id="ftHour"></select>
+                    <span class="colon">:</span>
+                    <select id="ftMinute"></select>
+                </div>
+                <p style="font-size:0.7rem; color:#f59e0b; margin-top:2px;">*用於計算 Table 4.7.5 Min Rest</p>
+            </div>
+
+            <button class="btn btn-gold" onclick="safeCalculate()" style="margin-top:20px;">
+                計算 (CALCULATE)
+            </button>
+        </div>
+
+        <!-- RIGHT: Timeline Inputs -->
+        <div class="panel">
+            <div class="panel-title">
+                <span>🕒</span>時間軸輸入
+                <span id="locDisplay" style="color:var(--jx-gold); font-size:0.7rem;">HOME BASE</span>
+            </div>
+            
+            <!-- Location Switch -->
+            <div class="mode-switch">
+                <div id="modeHome" class="mode-btn active" onclick="setLocation('home')">
+                    <i class="fas fa-home"></i> Home Base (基地)
+                </div>
+                <div id="modeOut" class="mode-btn" onclick="setLocation('outstation')">
+                    <i class="fas fa-suitcase"></i> Outstation (外站)
+                </div>
+            </div>
+
+            <!-- FDP Times -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                <!-- FDP Start -->
+                <div class="form-group">
+                    <label style="color:var(--color-success);">FDP Start Time</label>
+                    <div class="radio-group" id="startTypeGroup">
+                        <label class="radio-label selected"><input type="radio" name="startType" value="report" checked onchange="updateRadioStyles()">Report</label>
+                        <label class="radio-label"><input type="radio" name="startType" value="dhd" onchange="updateRadioStyles()">DHD</label>
+                        <label class="radio-label"><input type="radio" name="startType" value="other" onchange="updateRadioStyles()">Other</label>
+                    </div>
+                    <div class="time-row">
+                        <!-- Custom Date Input -->
+                        <div class="date-wrapper">
+                            <div class="date-display" id="disp_reportDate">MM/DD</div>
+                            <input type="date" id="reportDate" class="date-input-hidden" onchange="updateDateDisplay('reportDate')">
+                        </div>
+                        <select id="reportHour"></select>
+                        <select id="reportMinute"></select>
+                    </div>
+                </div>
+
+                <!-- FDP End -->
+                <div class="form-group">
+                    <label style="color:var(--color-success);">FDP End Time</label>
+                    <div class="radio-group" id="endTypeGroup">
+                        <label class="radio-label selected"><input type="radio" name="endType" value="block30" checked onchange="updateRadioStyles()">Block-In + 30</label>
+                        <label class="radio-label"><input type="radio" name="endType" value="actual" onchange="updateRadioStyles()">Actual End</label>
+                    </div>
+                    <div class="time-row">
+                        <!-- Custom Date Input -->
+                        <div class="date-wrapper">
+                            <div class="date-display" id="disp_releaseDate">MM/DD</div>
+                            <input type="date" id="releaseDate" class="date-input-hidden" onchange="updateDateDisplay('releaseDate')">
+                        </div>
+                        <select id="releaseHour"></select>
+                        <select id="releaseMinute"></select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REST PERIOD CALCULATION -->
+            <div class="rest-section">
+                <div class="rest-header">
+                    <i>🌙</i> REST PERIOD CALCULATION
+                </div>
+                
+                <!-- Home Base UI -->
+                <div id="uiHome">
+                    <p style="font-size:0.8rem; color:#6b7280; margin-bottom:10px;">
+                        Logic: From FDP End Time to Next Report.
+                    </p>
+                    <div class="form-group">
+                        <label style="color:var(--color-info);">Next Duty Report</label>
+                        <div class="time-row">
+                            <div class="date-wrapper">
+                                <div class="date-display" id="disp_nextReportDate">MM/DD</div>
+                                <input type="date" id="nextReportDate" class="date-input-hidden" onchange="updateDateDisplay('nextReportDate')">
+                            </div>
+                            <select id="nextReportHour"></select>
+                            <select id="nextReportMinute"></select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Outstation UI -->
+                <div id="uiOut" class="hidden">
+                    <p style="font-size:0.8rem; color:#6b7280; margin-bottom:10px;">
+                        Logic: From Hotel Check-in to Hotel Check-out.
+                    </p>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                        <div class="form-group">
+                            <label style="color:#4b5563;">Hotel Check-in</label>
+                            <div class="time-row">
+                                <div class="date-wrapper">
+                                    <div class="date-display" id="disp_hotelInDate">MM/DD</div>
+                                    <input type="date" id="hotelInDate" class="date-input-hidden" onchange="updateDateDisplay('hotelInDate')">
+                                </div>
+                                <select id="hotelInHour"></select>
+                                <select id="hotelInMinute"></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label style="color:#4b5563;">Hotel Check-out</label>
+                            <div class="time-row">
+                                <div class="date-wrapper">
+                                    <div class="date-display" id="disp_hotelOutDate">MM/DD</div>
+                                    <input type="date" id="hotelOutDate" class="date-input-hidden" onchange="updateDateDisplay('hotelOutDate')">
+                                </div>
+                                <select id="hotelOutHour"></select>
+                                <select id="hotelOutMinute"></select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="resultBox" class="hidden">
+        
+        <div class="result-cards">
+            <!-- FDP -->
+            <div id="cardFDP" class="res-card">
+                <div class="res-title">Actual FDP</div>
+                <div id="valFDP" class="res-val">--:--</div>
+                <div class="res-sub"><span id="txtMaxFDP">Max: --:--</span></div>
+            </div>
+            <!-- FT -->
+            <div id="cardFT" class="res-card">
+                <div class="res-title">Flight Time</div>
+                <div id="valFT" class="res-val">--:--</div>
+                <div class="res-sub"><span id="txtMaxFT">Max: --:--</span></div>
+            </div>
+            <!-- Rest -->
+            <div id="cardRest" class="res-card">
+                <div class="res-title">Actual Rest</div>
+                <div id="valRest" class="res-val">--:--</div>
+                <div class="res-sub"><span id="txtMinRest">Min Req: --:--</span></div>
+            </div>
+        </div>
+
+        <div class="timeline-box">
+            <h4 style="margin:0; font-size:0.8rem; color:#999; text-transform:uppercase;">Visual Timeline</h4>
+            <div id="timeline" class="timeline-container"></div>
+            <div class="legend">
+                <div><span class="leg-dot" style="background:var(--color-success);"></span>FDP</div>
+                <div><span class="leg-dot" style="background:var(--color-info); opacity:0.5;"></span>Max FDP</div>
+                <div><span class="leg-dot" style="background:#4b5563;"></span>Actual Rest</div>
+                <div><span class="leg-dot" style="background:#f59e0b; opacity:0.5;"></span>Min Rest Req</div>
+            </div>
+        </div>
+
+        <div class="notes">
+            <strong>📌 邏輯說明：</strong>
+            <ul>
+                <li><strong>FDP Start/End:</strong> 輸入實際 FDP 的起始與結束時間。選單選項僅作為紀錄與定義確認，不影響系統對「FDP = End - Start」的計算。</li>
+                <li><strong>FDP Limit:</strong> Single 14h / Multi 18h / Double 24h.</li>
+                <li><strong>Home Base Rest:</strong> 開始時間 = FDP End Time，結束時間 = 下一腿 Report Time。</li>
+                <li><strong>Outstation Rest:</strong> 完全依照 Hotel Check-in 到 Hotel Check-out 的時間區間計算。</li>
+                <li><strong>Min Rest Req:</strong> 依據 Table 4.7.5 (Single 10/18h, Multi 10/18/24h, Double 10/18/22h) 進行檢查。</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+<script>
+/* --- LOGIC V3.3 --- */
+const pad = (n) => n.toString().padStart(2, '0');
+const fmt = (m) => `${Math.floor(m/60)}:${pad(m%60)}`;
+
+let currentLocation = 'home'; // 'home' or 'outstation'
+
+function initSelectors() {
+    const hours = Array.from({length:24}, (_,i) => pad(i));
+    const minutes = Array.from({length:60}, (_,i) => pad(i));
+    
+    const hIds = ["reportHour","releaseHour","ftHour","nextReportHour","hotelInHour","hotelOutHour"];
+    const mIds = ["reportMinute","releaseMinute","ftMinute","nextReportMinute","hotelInMinute","hotelOutMinute"];
+
+    hIds.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) { el.innerHTML=""; hours.forEach(h => el.add(new Option(h,h))); }
+    });
+    mIds.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) { el.innerHTML=""; minutes.forEach(m => el.add(new Option(m,m))); }
+    });
 }
+
+function setDefaults() {
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    
+    // Initial Date Set
+    ["reportDate", "releaseDate", "nextReportDate", "hotelInDate", "hotelOutDate"].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) {
+            el.value = today;
+            updateDateDisplay(id);
+        }
+    });
+
+    document.getElementById('reportHour').value = pad(now.getUTCHours());
+    
+    // Release +8h
+    const rel = new Date(now.getTime() + 8*3600000);
+    const relDate = rel.toISOString().split('T')[0];
+    const relEl = document.getElementById('releaseDate');
+    relEl.value = relDate;
+    updateDateDisplay('releaseDate');
+    document.getElementById('releaseHour').value = pad(rel.getUTCHours());
+    
+    // Next Report +24h
+    const next = new Date(rel.getTime() + 24*3600000);
+    const nextDate = next.toISOString().split('T')[0];
+    const nextEl = document.getElementById('nextReportDate');
+    nextEl.value = nextDate;
+    updateDateDisplay('nextReportDate');
+    document.getElementById('nextReportHour').value = pad(next.getUTCHours());
+    
+    // FT 7h
+    document.getElementById('ftHour').value = "07";
+}
+
+// Custom Date Display Logic (MM/DD)
+function updateDateDisplay(inputId) {
+    const input = document.getElementById(inputId);
+    const disp = document.getElementById('disp_' + inputId);
+    if(input.value) {
+        // value is YYYY-MM-DD
+        const parts = input.value.split('-'); // [YYYY, MM, DD]
+        if(parts.length === 3) {
+            disp.innerText = `${parts[1]}/${parts[2]}`; // MM/DD
+            disp.style.color = "#111827";
+        }
+    } else {
+        disp.innerText = "MM/DD";
+        disp.style.color = "#9ca3af";
+    }
+}
+
+function updateRadioStyles() {
+    document.querySelectorAll('.radio-label').forEach(lbl => {
+        const radio = lbl.querySelector('input');
+        if(radio.checked) lbl.classList.add('selected');
+        else lbl.classList.remove('selected');
+    });
+}
+
+function updateUI() {
+    const crew = document.getElementById('crew').value;
+    const c1Box = document.getElementById('class1Box');
+    if(crew === "2") c1Box.classList.add('hidden');
+    else c1Box.classList.remove('hidden');
+}
+
+function setLocation(loc) {
+    currentLocation = loc;
+    const homeBtn = document.getElementById('modeHome');
+    const outBtn = document.getElementById('modeOut');
+    const uiHome = document.getElementById('uiHome');
+    const uiOut = document.getElementById('uiOut');
+    const locDisp = document.getElementById('locDisplay');
+
+    if(loc === 'home') {
+        homeBtn.classList.add('active');
+        outBtn.classList.remove('active');
+        uiHome.classList.remove('hidden');
+        uiOut.classList.add('hidden');
+        locDisp.innerText = "HOME BASE";
+    } else {
+        outBtn.classList.add('active');
+        homeBtn.classList.remove('active');
+        uiOut.classList.remove('hidden');
+        uiHome.classList.add('hidden');
+        locDisp.innerText = "OUTSTATION";
+    }
+}
+
+function safeCalculate() {
+    try { calculate(); } catch(e) { alert("Error: " + e.message); }
+}
+
+function calculate() {
+    // 1. Get Dates
+    const getDT = (p) => {
+        const d = document.getElementById(p+'Date').value;
+        const h = document.getElementById(p+'Hour').value;
+        const m = document.getElementById(p+'Minute').value;
+        if(!d) return null;
+        return new Date(`${d}T${h}:${m}:00Z`);
+    };
+
+    const report = getDT('report'); // Now FDP Start
+    const release = getDT('release'); // Now FDP End
+    
+    if(!report || !release) throw new Error("請輸入完整的 FDP Start/End 時間");
+    if(release <= report) throw new Error("FDP End 時間必須晚於 Start 時間");
+
+    // 2. Settings
+    const crew = document.getElementById('crew').value;
+    const hasClass1 = document.getElementById('class1').value === 'yes';
+    const ftMin = parseInt(document.getElementById('ftHour').value)*60 + parseInt(document.getElementById('ftMinute').value);
+
+    // 3. FDP & FT Logic
+    const actFDP = (release - report)/60000;
+    const actFT = ftMin;
+
+    let maxFDP = 0, maxFT = 0;
+    if(crew === "2") { maxFDP = 14*60; maxFT = 10*60; }
+    else if(crew === "3") { maxFDP = 18*60; maxFT = hasClass1 ? 16*60 : 12*60; }
+    else { maxFDP = 24*60; maxFT = hasClass1 ? 18*60 : 12*60; }
+
+    // 4. Rest Logic
+    let actRest = 0;
+    let restStart, restEnd;
+    
+    if(currentLocation === 'home') {
+        const nextReport = getDT('nextReport');
+        if(!nextReport) throw new Error("請輸入 Next Duty Report 時間");
+        
+        // Rest starts at Release (FDP End)
+        restStart = release;
+        restEnd = nextReport;
+        
+        if(restEnd <= restStart) actRest = 0;
+        else actRest = (restEnd - restStart)/60000;
+
+    } else {
+        // Outstation
+        const hotelIn = getDT('hotelIn');
+        const hotelOut = getDT('hotelOut');
+        if(!hotelIn || !hotelOut) throw new Error("請輸入 Hotel Check-in / Check-out 時間");
+        
+        restStart = hotelIn;
+        restEnd = hotelOut;
+        
+        if(restEnd <= restStart) throw new Error("Hotel Check-out 必須晚於 Check-in");
+        actRest = (restEnd - restStart)/60000;
+    }
+
+    // Min Rest Limit (Table 4.7.5)
+    let minRestH = 0;
+    const ftH = actFT / 60;
+    if(crew === "2") minRestH = (ftH <= 8) ? 10 : 18;
+    else if(crew === "3") minRestH = (ftH <= 8) ? 10 : (ftH <= 12 ? 18 : 24);
+    else minRestH = (ftH <= 8) ? 10 : (ftH <= 16 ? 18 : 22);
+    const minRest = minRestH * 60;
+
+    // 5. Render
+    const updateCard = (id, act, lim, isMin) => {
+        const elVal = document.getElementById('val'+id);
+        const elLim = document.getElementById(isMin ? 'txtMin'+id : 'txtMax'+id);
+        const card = document.getElementById('card'+id);
+        
+        elVal.innerText = fmt(act);
+        elLim.innerText = (isMin ? "Min Req: " : "Max: ") + fmt(lim);
+        
+        let bad = isMin ? (act < lim) : (act > lim);
+        card.className = "res-card " + (bad ? "warn" : "ok");
+    };
+
+    updateCard('FDP', actFDP, maxFDP, false);
+    updateCard('FT', actFT, maxFT, false);
+    updateCard('Rest', actRest, minRest, true);
+    
+    // 6. Timeline
+    drawTimeline(report, release, restStart, restEnd, actFDP, maxFDP, minRest);
+    document.getElementById('resultBox').classList.remove('hidden');
+}
+
+function drawTimeline(rep, rel, rStart, rEnd, actFDP, maxFDP, minRest) {
+    const container = document.getElementById('timeline');
+    container.innerHTML = "";
+    
+    // Canvas settings
+    const minRestPoint = new Date(rel.getTime() + minRest*60000);
+    const finalPoint = new Date(Math.max(rEnd.getTime(), minRestPoint.getTime()));
+    
+    const cvsStart = new Date(rep.getTime() - 60*60000);
+    const cvsEnd = new Date(finalPoint.getTime() + 120*60000);
+    const totalMin = (cvsEnd - cvsStart) / 60000;
+
+    const getX = (d) => ((d - cvsStart)/60000 / totalMin) * 100;
+    const getW = (m) => (m / totalMin) * 100;
+
+    const addBlock = (x, w, txt, cls) => {
+        const d = document.createElement('div');
+        d.className = "block " + cls;
+        d.style.left = x + "%";
+        d.style.width = w + "%";
+        d.innerHTML = txt;
+        container.appendChild(d);
+    };
+
+    const addTick = (d, txt) => {
+        const x = getX(d);
+        const t = document.createElement('div');
+        t.className = "tick"; t.style.left = x+"%";
+        container.appendChild(t);
+        const l = document.createElement('div');
+        l.className = "tick-label"; l.style.left = x+"%";
+        l.innerHTML = txt;
+        container.appendChild(l);
+    };
+
+    // FDP
+    addBlock(getX(rep), getW(actFDP), `FDP ${fmt(actFDP)}`, "bg-fdp" + (actFDP > maxFDP ? " violation":""));
+    addBlock(getX(rep), getW(maxFDP), `Max ${fmt(maxFDP)}`, "bg-mfdp");
+
+    // Actual Rest
+    const actRestVal = (rEnd - rStart)/60000;
+    addBlock(getX(rStart), getW(actRestVal), `Rest ${fmt(actRestVal)}`, "bg-rp" + (actRestVal < minRest ? " violation":""));
+    
+    // Min Rest
+    addBlock(getX(rStart), getW(minRest), `Min Req ${fmt(minRest)}`, "bg-mrp");
+
+    // Ticks
+    const fT = (d) => `${d.getUTCMonth()+1}/${d.getUTCDate()}\n${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+    addTick(rep, "Start\n"+fT(rep));
+    addTick(rel, "End\n"+fT(rel));
+    
+    if(currentLocation === 'home') {
+        addTick(rStart, "Rst Start\n(FDP End)");
+        addTick(rEnd, "Next Rpt\n"+fT(rEnd));
+    } else {
+        addTick(rStart, "Hotel In\n"+fT(rStart));
+        addTick(rEnd, "Hotel Out\n"+fT(rEnd));
+    }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    initSelectors();
+    setDefaults();
+    updateUI();
+});
 </script>
+
 </body>
 </html>
