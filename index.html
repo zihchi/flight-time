@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JX FDP & Rest Calculator v4.2</title>
+<title>JX FDP & Rest Calculator v4.5</title>
 <style>
     /* --- Core Styles --- */
     :root {
@@ -193,12 +193,26 @@
     
     .logic-chk.active { background: #eff6ff; border-color: #3b82f6; color: #1e40af; }
     .logic-chk.warn { background: #fffbeb; border-color: #f59e0b; color: #92400e; }
+    .logic-chk.discretion { background: #f3e8ff; border-color: #9333ea; color: #6b21a8; }
 
     /* Results */
     .result-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
-    .res-card { background: white; padding: 15px; border-radius: 6px; border: 1px solid #e5e7eb; border-left: 4px solid #ccc; position: relative; }
+    .res-card { background: white; padding: 15px; border-radius: 6px; border: 1px solid #e5e7eb; border-left: 4px solid #ccc; position: relative; transition: all 0.3s; }
+    
+    /* Status Colors */
     .res-card.ok { border-left-color: var(--color-success); }
     .res-card.warn { border-left-color: var(--color-danger); }
+    
+    /* 醒目紅 - 全卡片變紅 (High Visibility) */
+    .res-card.violation { 
+        background-color: #fee2e2 !important; /* bg-red-100 */
+        border-color: #ef4444 !important;
+        border-left-color: #b91c1c !important; /* deeper red border */
+        color: #991b1b;
+    }
+    .res-card.violation .res-title { color: #b91c1c; }
+    .res-card.violation .res-val { color: #7f1d1d; }
+    .res-card.violation .res-sub { color: #991b1b; font-weight: bold; }
     
     .res-title { font-size: 0.7rem; color: #6b7280; text-transform: uppercase; font-weight: 700; margin-bottom: 5px; }
     .res-val { font-size: 1.6rem; font-weight: 700; font-family: monospace; color: #111827; }
@@ -238,17 +252,6 @@
 
     .notes { background: #f3f4f6; padding: 15px; border-radius: 6px; margin-top: 20px; font-size: 0.85rem; color: #4b5563; border: 1px solid #e5e7eb; }
     .notes ul { padding-left: 20px; margin: 5px 0; }
-    
-    #crew3Msg { 
-        font-size: 0.75rem; 
-        color: #d97706; 
-        background: #fffbeb; 
-        padding: 8px; 
-        border: 1px dashed #f59e0b; 
-        border-radius: 4px; 
-        margin-top: 5px; 
-        line-height: 1.4;
-    }
 </style>
 </head>
 <body>
@@ -258,10 +261,10 @@
     <!-- Header -->
     <div class="header">
         <div>
-            <div class="title"><i>✈</i> JX FDP & Rest Tool v4.2</div>
-            <div class="subtitle">OMA Ch.4 Logic (Strict >3h & WOCL Rules)</div>
+            <div class="title"><i>✈</i> JX FDP & Rest Tool v4.5</div>
+            <div class="subtitle">OMA Ch.4 Logic (Integrated PIC Note)</div>
         </div>
-        <div style="font-size:0.8rem; color:#999;">Final Logic v4.2</div>
+        <div style="font-size:0.8rem; color:#999;">Final Logic v4.5</div>
     </div>
 
     <div class="main-grid">
@@ -277,9 +280,6 @@
                     <option value="3">3 人 (Multiple Crew)</option>
                     <option value="4">4 人 (Double Crew)</option>
                 </select>
-                <p id="crew3Msg" class="hidden">
-                    <i class="fas fa-exclamation-circle"></i> 不可抗力因素且PIC同意，可以增加 2hr Max FDP。
-                </p>
             </div>
 
             <div id="class1Box" class="form-group hidden">
@@ -290,8 +290,19 @@
                 </select>
             </div>
 
+            <!-- LOGIC: Commander's Discretion (Conditionally Visible) -->
+            <div id="picDiscretionBox" class="form-group hidden" style="border-top:1px solid #eee; padding-top:10px;">
+                <label class="logic-chk discretion">
+                    <input type="checkbox" id="picDiscretion" onchange="safeCalculate()">
+                    <div>
+                        Commander's Discretion (+2h)
+                        <div style="font-size:0.7rem; font-weight:normal; color:#6b21a8;">(不可抗力因素且PIC同意)</div>
+                    </div>
+                </label>
+            </div>
+
             <!-- LOGIC: Time Diff -->
-            <div class="form-group" style="border-top:1px solid #eee; padding-top:10px;">
+            <div class="form-group">
                 <label class="logic-chk warn">
                     <input type="checkbox" id="timeDiff6h" onchange="safeCalculate()">
                     <div>
@@ -573,10 +584,11 @@
         <div class="notes">
             <strong>📌 邏輯說明：</strong>
             <ul>
+                <li><strong>Commander's Discretion:</strong> 僅於組員為 3 人 (Multiple Crew) 時顯示，勾選後 Max FDP 自動增加 2 小時。</li>
                 <li><strong>Accommodation (Not Start):</strong> Actual FDP 扣除休息時數 (無上限延長)。</li>
                 <li><strong>Accommodation (Started):</strong> Max FDP 增加休息時數的 50% (上限 24h)。</li>
                 <li><strong>Time Diff ≥ 6h:</strong> 若勾選，基地最小休息時間顯示為 "No FD at least 48hr"。</li>
-                <li><strong>WOCL:</strong> 若侵犯當地 02-05，將顯示詳細休息規定 (34h/54h 規則)。</li>
+                <li><strong>WOCL (02:00-05:00 LT):</strong> 依據所選 Base Timezone 計算夜間勤務。</li>
             </ul>
         </div>
     </div>
@@ -584,7 +596,7 @@
 </div>
 
 <script>
-/* --- LOGIC V4.2 --- */
+/* --- LOGIC V4.5 --- */
 const pad = (n) => n.toString().padStart(2, '0');
 const fmt = (m) => `${Math.floor(m/60)}:${pad(m%60)}`;
 
@@ -673,13 +685,24 @@ function updateRadioStyles() {
 function updateUI() {
     const crew = document.getElementById('crew').value;
     const c1Box = document.getElementById('class1Box');
-    const msg = document.getElementById('crew3Msg');
+    const picBox = document.getElementById('picDiscretionBox');
     
+    // Class 1 toggle
     if(crew === "2") c1Box.classList.add('hidden');
     else c1Box.classList.remove('hidden');
 
-    if(crew === "3") msg.classList.remove('hidden');
-    else msg.classList.add('hidden');
+    // 3-Crew Logic
+    if(crew === "3") {
+        picBox.classList.remove('hidden'); 
+    } else {
+        picBox.classList.add('hidden'); 
+        
+        // Auto uncheck & recalc if hiding
+        if(document.getElementById('picDiscretion').checked) {
+            document.getElementById('picDiscretion').checked = false;
+            safeCalculate();
+        }
+    }
 }
 
 function toggleDHD() {
@@ -755,7 +778,7 @@ function calculate() {
     else if(crew === "3") { maxFDP = 18*60; maxFT = hasClass1 ? 16*60 : 12*60; }
     else { maxFDP = 24*60; maxFT = hasClass1 ? 18*60 : 12*60; }
 
-    // --- NEW ACCOMMODATION LOGIC v4.2 (Strict > 180 min) ---
+    // --- ACCOMMODATION LOGIC v4.2 (Strict > 180 min) ---
     let extMin = 0;
     let deductMin = 0;
     let isAccActive = document.getElementById('hasRestAcc').checked;
@@ -797,6 +820,13 @@ function calculate() {
             warningBox.classList.remove('hidden');
             // Logic effects are reset (extMin=0, deductMin=0)
         }
+    }
+
+    // --- COMMANDER'S DISCRETION ---
+    let extPic = 0;
+    if(document.getElementById('picDiscretion').checked) {
+        extPic = 120; // 2 hours
+        maxFDP += extPic;
     }
 
     // 4. Rest Logic
@@ -869,16 +899,25 @@ function calculate() {
         
         elVal.innerText = fmt(act);
         
+        let bad = false;
         if(id === 'Rest' && document.getElementById('timeDiff6h').checked && currentLocation === 'home') {
             elLim.innerText = "Req: No FD at least 48hr";
-            let bad = act < 48*60; 
-            card.className = "res-card " + (bad ? "warn" : "ok");
-            elExcep.classList.remove('hidden');
+            bad = act < 48*60; 
+            if(bad) elExcep.classList.remove('hidden');
+            else elExcep.classList.add('hidden');
         } else {
             if(id === 'Rest') elExcep.classList.add('hidden');
             elLim.innerText = (isMin ? "Min Req: " : "Max: ") + fmt(lim);
-            let bad = isMin ? (act < lim) : (act > lim);
-            card.className = "res-card " + (bad ? "warn" : "ok");
+            bad = isMin ? (act < lim) : (act > lim);
+        }
+
+        // Apply violation style (whole card red)
+        if(bad) {
+            card.classList.add('violation');
+            card.classList.remove('ok', 'warn');
+        } else {
+            card.classList.remove('violation', 'warn');
+            card.classList.add('ok');
         }
     };
 
@@ -888,14 +927,20 @@ function calculate() {
     
     // Extension/Deduct Text
     const elExt = document.getElementById('txtExtFDP');
+    let totalExt = 0;
+    let txt = "";
+    
     if(deductMin > 0) {
+        txt = `(Deduct -${fmt(deductMin)}) `;
+    }
+    
+    if(extMin > 0) txt += `(Split +${fmt(extMin)}) `;
+    if(extPic > 0) txt += `(PIC +${fmt(extPic)}) `;
+    
+    if(txt !== "") {
         elExt.style.display = 'inline';
-        elExt.innerText = `(Deducted -${fmt(deductMin)})`;
-        elExt.style.color = "#059669"; 
-    } else if(extMin > 0) {
-        elExt.style.display = 'inline';
-        elExt.innerText = `(Ext +${fmt(extMin)})`;
-        elExt.style.color = "#8b5cf6"; 
+        elExt.innerText = txt;
+        elExt.style.color = (deductMin > 0 && extMin===0 && extPic===0) ? "#059669" : "#8b5cf6"; 
     } else {
         elExt.style.display = 'none';
     }
@@ -906,11 +951,11 @@ function calculate() {
     else wBox.classList.add('hidden');
 
     // 6. Timeline
-    drawTimeline(report, release, restStart, restEnd, actFDP, maxFDP, minRest, hasDHD, dhdEnd, baseOffset, extMin, deductMin);
+    drawTimeline(report, release, restStart, restEnd, actFDP, maxFDP, minRest, hasDHD, dhdEnd, baseOffset, extMin, deductMin, extPic);
     document.getElementById('resultBox').classList.remove('hidden');
 }
 
-function drawTimeline(rep, rel, rStart, rEnd, actFDP, maxFDP, minRest, hasDHD, dhdEnd, offset, extMin, deductMin) {
+function drawTimeline(rep, rel, rStart, rEnd, actFDP, maxFDP, minRest, hasDHD, dhdEnd, offset, extMin, deductMin, extPic) {
     const container = document.getElementById('timeline');
     container.innerHTML = "";
     
@@ -982,13 +1027,14 @@ function drawTimeline(rep, rel, rStart, rEnd, actFDP, maxFDP, minRest, hasDHD, d
     
     addBlock(getX(rep), getW(rawFDP), `Actual ${fmt(actFDP)}`, "bg-fdp" + (actFDP > maxFDP ? " violation":""));
     
-    // Max FDP
-    let baseMax = maxFDP - extMin; 
+    // Max FDP Base (Includes Split Duty Ext)
+    let baseMax = maxFDP - extPic; 
     addBlock(getX(rep), getW(baseMax), `Max ${fmt(baseMax)}`, "bg-mfdp");
     
-    if(extMin > 0) {
+    // Draw PIC Ext separately if exists
+    if(extPic > 0) {
         const extStart = new Date(rep.getTime() + baseMax*60000);
-        addBlock(getX(extStart), getW(extMin), `+${fmt(extMin)}`, "bg-ext");
+        addBlock(getX(extStart), getW(extPic), `PIC +2h`, "bg-ext");
     }
 
     // DHD
