@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JX FDP & Rest Calculator v3.12</title>
+<title>JX FDP & Rest Calculator v4.2</title>
 <style>
     /* --- Core Styles --- */
     :root {
@@ -51,7 +51,7 @@
     .subtitle { font-size: 0.8rem; color: #6b7280; font-weight: 500; margin-left: 38px; margin-top: -5px; }
 
     /* Layout */
-    .main-grid { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+    .main-grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
     @media (max-width: 850px) { .main-grid { grid-template-columns: 1fr; } }
 
     /* Panels */
@@ -215,7 +215,7 @@
     .bg-mrp { background: repeating-linear-gradient(45deg, #fbbf24, #fbbf24 10px, #f59e0b 10px, #f59e0b 20px); top: 90px; opacity: 0.9; }
     .bg-rp { background: #4b5563; top: 130px; } 
     .bg-dhd { background: repeating-linear-gradient(-45deg, #d1d5db, #d1d5db 5px, #9ca3af 5px, #9ca3af 10px); top: 10px; opacity: 0.7; z-index: 4; } 
-    .bg-break { background: repeating-linear-gradient(45deg, #d1fae5, #d1fae5 5px, #6ee7b7 5px, #6ee7b7 10px); top: 10px; color: #047857; z-index: 6; border:1px solid #10b981; }
+    .bg-ext { background: repeating-linear-gradient(45deg, #ddd6fe, #ddd6fe 10px, #8b5cf6 10px, #8b5cf6 20px); top: 50px; opacity: 0.8; z-index: 1; }
 
     /* WOCL Visual */
     .bg-wocl { 
@@ -258,10 +258,10 @@
     <!-- Header -->
     <div class="header">
         <div>
-            <div class="title"><i>✈</i> JX FDP & Rest Tool v3.12</div>
-            <div class="subtitle">OMA Ch.4 Logic</div>
+            <div class="title"><i>✈</i> JX FDP & Rest Tool v4.2</div>
+            <div class="subtitle">OMA Ch.4 Logic (Strict >3h & WOCL Rules)</div>
         </div>
-        <div style="font-size:0.8rem; color:#999;">Rest Exemptions Added</div>
+        <div style="font-size:0.8rem; color:#999;">Final Logic v4.2</div>
     </div>
 
     <div class="main-grid">
@@ -345,27 +345,6 @@
                 </div>
             </div>
 
-            <!-- LOGIC 1: Delayed Reporting -->
-            <div class="form-group" style="margin-bottom:10px;">
-                <label class="logic-chk" id="lblDelay">
-                    <input type="checkbox" id="isDelayed" onchange="toggleDelay()">
-                    Delayed Reporting (延誤報到)
-                </label>
-                
-                <div id="delayInputBox" class="hidden" style="background:#f0f9ff; padding:10px; border-radius:6px; border:1px dashed #0284c7; margin-top:5px;">
-                    <label style="color:#0284c7;">Original Scheduled Report</label>
-                    <div class="time-row">
-                        <div class="date-wrapper">
-                            <div class="date-display" id="disp_origReportDate">MM/DD</div>
-                            <input type="date" id="origReportDate" class="date-input-hidden" onchange="updateDateDisplay('origReportDate')">
-                        </div>
-                        <select id="origReportHour"></select>
-                        <select id="origReportMinute"></select>
-                    </div>
-                    <p style="font-size:0.7rem; color:#0369a1; margin-top:2px;">*Max FDP 將以此時間查表計算</p>
-                </div>
-            </div>
-
             <!-- FDP Times -->
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
                 <!-- FDP Start -->
@@ -404,40 +383,47 @@
                 </div>
             </div>
 
-            <!-- Accommodation Break -->
+            <!-- Accommodation Break Logic (Strict > 3h) -->
             <div class="form-group" style="margin-top:10px;">
                 <label class="logic-chk active" style="font-weight:700; color:#059669;">
-                    <input type="checkbox" id="hasBreak" onchange="toggleBreak()">
-                    Rest in Appropriate accommodation (Split Duty)
+                    <input type="checkbox" id="hasRestAcc" onchange="toggleRestAcc()">
+                    Rest in Appropriate accommodation
                 </label>
             </div>
 
-            <div id="breakInputBox" class="acc-break-section hidden">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-                    <div class="form-group">
-                        <label style="color:#059669;">Break Start (C/I)</label>
-                        <div class="time-row">
-                            <div class="date-wrapper">
-                                <div class="date-display" id="disp_breakStartDate">MM/DD</div>
-                                <input type="date" id="breakStartDate" class="date-input-hidden" onchange="updateDateDisplay('breakStartDate')">
-                            </div>
-                            <select id="breakStartHour"></select>
-                            <select id="breakStartMinute"></select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label style="color:#059669;">Break End (C/O)</label>
-                        <div class="time-row">
-                            <div class="date-wrapper">
-                                <div class="date-display" id="disp_breakEndDate">MM/DD</div>
-                                <input type="date" id="breakEndDate" class="date-input-hidden" onchange="updateDateDisplay('breakEndDate')">
-                            </div>
-                            <select id="breakEndHour"></select>
-                            <select id="breakEndMinute"></select>
-                        </div>
+            <div id="restAccBox" class="acc-break-section hidden">
+                <div class="form-group">
+                    <label style="color:#059669;">Rest Duration (休息時長)</label>
+                    <div class="time-row">
+                        <select id="restDurHour" style="flex:1;" onchange="safeCalculate()"></select>
+                        <span style="font-weight:bold; padding:0 5px;">hr</span>
+                        <select id="restDurMinute" style="flex:1;" onchange="safeCalculate()"></select>
+                        <span style="font-weight:bold; padding:0 5px;">min</span>
                     </div>
                 </div>
-                <p style="font-size:0.7rem; color:#059669; margin-top:5px;">*若休息 ≥3小時，Max FDP 增加休息時間的 50%</p>
+                
+                <!-- Logic Section: Only show if Duration > 3h -->
+                <div id="restLogicOptions" class="form-group" style="margin-top:10px;">
+                    <label style="color:#059669;">Scenario Type</label>
+                    <div style="display:flex; gap:10px;">
+                        <label style="font-size:0.8rem; font-weight:normal; display:flex; align-items:center; cursor:pointer;">
+                            <input type="radio" name="restScenario" value="not_start" checked onchange="safeCalculate()">
+                            First Sector NOT Start
+                        </label>
+                        <label style="font-size:0.8rem; font-weight:normal; display:flex; align-items:center; cursor:pointer;">
+                            <input type="radio" name="restScenario" value="start" onchange="safeCalculate()">
+                            First Sector Start
+                        </label>
+                    </div>
+                    <p id="restNote" style="font-size:0.7rem; color:#059669; margin-top:5px;">
+                        *Mode: FDP deducts rest time (Unlimited Max FDP Ext)
+                    </p>
+                </div>
+                
+                <!-- Warning if too short -->
+                <p id="restWarning" class="hidden" style="font-size:0.75rem; color:#ef4444; margin-top:5px; font-weight:bold;">
+                    <i class="fas fa-ban"></i> 休息時長需 > 3小時 (180min) 才能適用延長規則 (不含3小時)。
+                </p>
             </div>
 
             <!-- REST PERIOD -->
@@ -516,12 +502,25 @@
     <!-- RESULTS -->
     <div id="resultBox" class="hidden">
         
-        <!-- WOCL Alert -->
-        <div id="woclAlert" class="hidden mb-4 p-3 bg-purple-100 border border-purple-400 text-purple-900 rounded flex items-center">
-            <i class="fas fa-moon mr-2 text-xl"></i>
-            <div>
-                <strong>Night Duty Alert (WOCL Encroachment)</strong>
-                <p class="text-xs">FDP touches 02:00-05:00 Local Time. Check OMA restrictions.</p>
+        <!-- WOCL Alert (Detailed) -->
+        <div id="woclAlert" class="hidden mb-4 p-4 bg-purple-50 border border-purple-400 text-purple-900 rounded">
+            <div class="flex items-start mb-2">
+                <i class="fas fa-moon mr-2 text-xl mt-1"></i>
+                <div>
+                    <strong class="text-sm">WOCL 侵犯警示 (FDP touches 02:00-05:00 LT)</strong>
+                </div>
+            </div>
+            <div class="text-xs text-gray-700 bg-white p-3 rounded border border-purple-100">
+                <p class="mb-1 font-semibold text-purple-800">Regulation Rules:</p>
+                <p class="mb-2 pl-2 border-l-2 border-purple-300">
+                    (1) A minimum rest period of <strong>34 consecutive hours</strong> shall be provided if a pilot operated for flight duty periods that infringed upon the window of circadian low on 2 consecutive days.
+                </p>
+                <p class="mb-2 pl-2 border-l-2 border-purple-300">
+                    (2) A minimum rest period of <strong>54 consecutive hours</strong> shall be provided if a pilot operated for flight duty periods that infringed upon the window of circadian low on 3 consecutive days.
+                </p>
+                <p class="italic text-gray-500 mt-2">
+                    * Exception: Both restrictions above are not applicable for a pilot when a rest period of at least <strong>14 consecutive hours</strong> is provided after each flight duty period that infringed upon the window of circadian low.
+                </p>
             </div>
         </div>
 
@@ -564,8 +563,8 @@
             <div class="legend">
                 <div><span class="leg-dot" style="background:var(--color-success);"></span>FDP</div>
                 <div><span class="leg-dot" style="background:var(--color-wocl); opacity:0.4;"></span>WOCL (02-05)</div>
-                <div><span class="leg-dot" style="background:repeating-linear-gradient(45deg, #d1fae5, #d1fae5 3px, #6ee7b7 3px, #6ee7b7 6px);"></span>Acc. Break</div>
                 <div><span class="leg-dot" style="background:var(--color-info); opacity:0.5;"></span>Max FDP</div>
+                <div><span class="leg-dot" style="background:repeating-linear-gradient(45deg, #ddd6fe, #ddd6fe 3px, #8b5cf6 3px, #8b5cf6 6px);"></span>Ext</div>
                 <div><span class="leg-dot" style="background:#4b5563;"></span>Rest</div>
                 <div><span class="leg-dot" style="background:repeating-linear-gradient(-45deg, #d1d5db, #d1d5db 2px, #9ca3af 2px, #9ca3af 4px);"></span>DHD</div>
             </div>
@@ -574,10 +573,10 @@
         <div class="notes">
             <strong>📌 邏輯說明：</strong>
             <ul>
-                <li><strong>Delayed Reporting:</strong> 勾選後，Max FDP 將依照「原定報到時間」計算，但 FDP 從「實際報到時間」開始累計。</li>
-                <li><strong>Time Diff ≥ 6h:</strong> 若勾選，基地最小休息時間顯示為 "No FD at least 48hr"，並顯示豁免條款。</li>
-                <li><strong>WOCL (02:00-05:00 LT):</strong> 依據所選 Base Timezone 計算。若 FDP 跨越此區間，視為夜間勤務。</li>
-                <li><strong>Split Duty:</strong> 若中場休息 ≥3h，Max FDP 增加休息時間的 50%。</li>
+                <li><strong>Accommodation (Not Start):</strong> Actual FDP 扣除休息時數 (無上限延長)。</li>
+                <li><strong>Accommodation (Started):</strong> Max FDP 增加休息時數的 50% (上限 24h)。</li>
+                <li><strong>Time Diff ≥ 6h:</strong> 若勾選，基地最小休息時間顯示為 "No FD at least 48hr"。</li>
+                <li><strong>WOCL:</strong> 若侵犯當地 02-05，將顯示詳細休息規定 (34h/54h 規則)。</li>
             </ul>
         </div>
     </div>
@@ -585,7 +584,7 @@
 </div>
 
 <script>
-/* --- LOGIC V3.12 --- */
+/* --- LOGIC V4.2 --- */
 const pad = (n) => n.toString().padStart(2, '0');
 const fmt = (m) => `${Math.floor(m/60)}:${pad(m%60)}`;
 
@@ -595,8 +594,9 @@ function initSelectors() {
     const hours = Array.from({length:24}, (_,i) => pad(i));
     const minutes = Array.from({length:60}, (_,i) => pad(i));
     
-    const hIds = ["reportHour","releaseHour","ftHour","nextReportHour","hotelInHour","hotelOutHour","dhdEndHour", "breakStartHour", "breakEndHour", "origReportHour"];
-    const mIds = ["reportMinute","releaseMinute","ftMinute","nextReportMinute","hotelInMinute","hotelOutMinute","dhdEndMinute", "breakStartMinute", "breakEndMinute", "origReportMinute"];
+    // Add restDurHour etc
+    const hIds = ["reportHour","releaseHour","ftHour","nextReportHour","hotelInHour","hotelOutHour","dhdEndHour", "origReportHour"];
+    const mIds = ["reportMinute","releaseMinute","ftMinute","nextReportMinute","hotelInMinute","hotelOutMinute","dhdEndMinute", "origReportMinute"];
 
     hIds.forEach(id => {
         const el = document.getElementById(id);
@@ -606,20 +606,29 @@ function initSelectors() {
         const el = document.getElementById(id);
         if(el) { el.innerHTML=""; minutes.forEach(m => el.add(new Option(m,m))); }
     });
+
+    // Special range for Rest Duration (e.g. 0-24h)
+    const restH = document.getElementById('restDurHour');
+    const restM = document.getElementById('restDurMinute');
+    restH.innerHTML = ""; restM.innerHTML = "";
+    for(let i=0; i<=24; i++) restH.add(new Option(i, i)); // 0-24h
+    for(let i=0; i<60; i++) restM.add(new Option(pad(i), i));
+    
+    // Default rest to 3h 0m
+    restH.value = 3;
 }
 
 function setDefaults() {
     const now = new Date();
     const today = now.toISOString().split('T')[0];
     
-    ["reportDate", "releaseDate", "nextReportDate", "hotelInDate", "hotelOutDate", "dhdEndDate", "breakStartDate", "breakEndDate", "origReportDate"].forEach(id => {
+    ["reportDate", "releaseDate", "nextReportDate", "hotelInDate", "hotelOutDate", "dhdEndDate", "origReportDate"].forEach(id => {
         const el = document.getElementById(id);
         if(el) { el.value = today; updateDateDisplay(id); }
     });
 
     document.getElementById('reportHour').value = pad(now.getUTCHours());
-    document.getElementById('origReportHour').value = pad(Math.max(0, now.getUTCHours()-1));
-
+    
     const rel = new Date(now.getTime() + 8*3600000);
     document.getElementById('releaseDate').value = rel.toISOString().split('T')[0];
     updateDateDisplay('releaseDate');
@@ -673,21 +682,6 @@ function updateUI() {
     else msg.classList.add('hidden');
 }
 
-function toggleDelay() {
-    const chk = document.getElementById('isDelayed').checked;
-    const box = document.getElementById('delayInputBox');
-    const lbl = document.getElementById('lblDelay');
-    if(chk) {
-        box.classList.remove('hidden');
-        lbl.classList.add('active');
-        document.getElementById('origReportDate').value = document.getElementById('reportDate').value;
-        updateDateDisplay('origReportDate');
-    } else {
-        box.classList.add('hidden');
-        lbl.classList.remove('active');
-    }
-}
-
 function toggleDHD() {
     const chk = document.getElementById('followingDHD').checked;
     const box = document.getElementById('dhdInputBox');
@@ -695,18 +689,12 @@ function toggleDHD() {
     else box.classList.add('hidden');
 }
 
-function toggleBreak() {
-    const chk = document.getElementById('hasBreak').checked;
-    const box = document.getElementById('breakInputBox');
-    if(chk) {
-        box.classList.remove('hidden');
-        const rd = document.getElementById('reportDate').value;
-        document.getElementById('breakStartDate').value = rd;
-        updateDateDisplay('breakStartDate');
-        document.getElementById('breakEndDate').value = rd;
-        updateDateDisplay('breakEndDate');
-    }
+function toggleRestAcc() {
+    const chk = document.getElementById('hasRestAcc').checked;
+    const box = document.getElementById('restAccBox');
+    if(chk) box.classList.remove('hidden');
     else box.classList.add('hidden');
+    safeCalculate();
 }
 
 function setLocation(loc) {
@@ -758,7 +746,8 @@ function calculate() {
     const baseOffset = parseInt(document.getElementById('baseTz').value);
 
     // 3. FDP & FT Logic
-    const actFDP = (release - report)/60000;
+    let rawFDP = (release - report)/60000;
+    let actFDP = rawFDP;
     const actFT = ftMin;
 
     let maxFDP = 0, maxFT = 0;
@@ -766,18 +755,47 @@ function calculate() {
     else if(crew === "3") { maxFDP = 18*60; maxFT = hasClass1 ? 16*60 : 12*60; }
     else { maxFDP = 24*60; maxFT = hasClass1 ? 18*60 : 12*60; }
 
-    // Split Duty Ext
+    // --- NEW ACCOMMODATION LOGIC v4.2 (Strict > 180 min) ---
     let extMin = 0;
-    let breakStart = null, breakEnd = null;
-    if(document.getElementById('hasBreak').checked) {
-        breakStart = getDT('breakStart');
-        breakEnd = getDT('breakEnd');
-        if(breakStart && breakEnd && breakEnd > breakStart) {
-            const bDur = (breakEnd - breakStart)/60000;
-            if(bDur >= 180) { 
-                extMin = Math.floor(bDur * 0.5);
-                maxFDP += extMin;
+    let deductMin = 0;
+    let isAccActive = document.getElementById('hasRestAcc').checked;
+    
+    // UI Elements
+    const logicBox = document.getElementById('restLogicOptions');
+    const warningBox = document.getElementById('restWarning');
+    const noteEl = document.getElementById('restNote');
+    
+    if(isAccActive) {
+        const rH = parseInt(document.getElementById('restDurHour').value);
+        const rM = parseInt(document.getElementById('restDurMinute').value);
+        const restDuration = rH*60 + rM;
+        
+        // Threshold: Must be > 3 hours (Strictly > 180 mins)
+        if(restDuration > 180) {
+            // Valid duration -> Show Logic Options
+            logicBox.classList.remove('hidden');
+            warningBox.classList.add('hidden');
+            
+            const scenario = document.querySelector('input[name="restScenario"]:checked').value;
+            
+            if(scenario === 'not_start') {
+                deductMin = restDuration;
+                actFDP = Math.max(0, rawFDP - deductMin);
+                noteEl.innerText = `*Mode: Deducting ${fmt(deductMin)} from Actual FDP`;
+            } else {
+                let added = Math.floor(restDuration * 0.5);
+                let tempMax = maxFDP + added;
+                if(tempMax > 1440) tempMax = 1440;
+                
+                extMin = tempMax - maxFDP; 
+                maxFDP = tempMax;
+                noteEl.innerText = `*Mode: Max FDP increased by ${fmt(extMin)} (50% Rest)`;
             }
+        } else {
+            // Invalid duration -> Hide Options, Show Warning
+            logicBox.classList.add('hidden');
+            warningBox.classList.remove('hidden');
+            // Logic effects are reset (extMin=0, deductMin=0)
         }
     }
 
@@ -868,11 +886,16 @@ function calculate() {
     updateCard('FT', actFT, maxFT, false);
     updateCard('Rest', actRest, minRest, true);
     
-    // Extension Text
+    // Extension/Deduct Text
     const elExt = document.getElementById('txtExtFDP');
-    if(extMin > 0) {
+    if(deductMin > 0) {
         elExt.style.display = 'inline';
-        elExt.innerText = `(+${fmt(extMin)} Ext)`;
+        elExt.innerText = `(Deducted -${fmt(deductMin)})`;
+        elExt.style.color = "#059669"; 
+    } else if(extMin > 0) {
+        elExt.style.display = 'inline';
+        elExt.innerText = `(Ext +${fmt(extMin)})`;
+        elExt.style.color = "#8b5cf6"; 
     } else {
         elExt.style.display = 'none';
     }
@@ -883,11 +906,11 @@ function calculate() {
     else wBox.classList.add('hidden');
 
     // 6. Timeline
-    drawTimeline(report, release, restStart, restEnd, actFDP, maxFDP, minRest, hasDHD, dhdEnd, breakStart, breakEnd, baseOffset);
+    drawTimeline(report, release, restStart, restEnd, actFDP, maxFDP, minRest, hasDHD, dhdEnd, baseOffset, extMin, deductMin);
     document.getElementById('resultBox').classList.remove('hidden');
 }
 
-function drawTimeline(rep, rel, rStart, rEnd, actFDP, maxFDP, minRest, hasDHD, dhdEnd, bStart, bEnd, offset) {
+function drawTimeline(rep, rel, rStart, rEnd, actFDP, maxFDP, minRest, hasDHD, dhdEnd, offset, extMin, deductMin) {
     const container = document.getElementById('timeline');
     container.innerHTML = "";
     
@@ -954,16 +977,18 @@ function drawTimeline(rep, rel, rStart, rEnd, actFDP, maxFDP, minRest, hasDHD, d
         iterTime.setDate(iterTime.getDate() + 1);
     }
 
-    // FDP
-    addBlock(getX(rep), getW(actFDP), `FDP ${fmt(actFDP)}`, "bg-fdp" + (actFDP > maxFDP ? " violation":""));
+    // FDP Visualization
+    const rawFDP = (rel - rep)/60000;
+    
+    addBlock(getX(rep), getW(rawFDP), `Actual ${fmt(actFDP)}`, "bg-fdp" + (actFDP > maxFDP ? " violation":""));
     
     // Max FDP
-    addBlock(getX(rep), getW(maxFDP), `Max ${fmt(maxFDP)}`, "bg-mfdp");
-
-    // Break
-    if(bStart && bEnd && bEnd > bStart) {
-        const bDur = (bEnd - bStart)/60000;
-        addBlock(getX(bStart), getW(bDur), `Break ${fmt(bDur)}`, "bg-break");
+    let baseMax = maxFDP - extMin; 
+    addBlock(getX(rep), getW(baseMax), `Max ${fmt(baseMax)}`, "bg-mfdp");
+    
+    if(extMin > 0) {
+        const extStart = new Date(rep.getTime() + baseMax*60000);
+        addBlock(getX(extStart), getW(extMin), `+${fmt(extMin)}`, "bg-ext");
     }
 
     // DHD
