@@ -261,10 +261,9 @@
     <!-- Header -->
     <div class="header">
         <div>
-            <div class="title"><i>✈</i> JX FDP & Rest Tool v4.5</div>
-            <div class="subtitle">OMA Ch.4 Logic (Integrated PIC Note)</div>
+            <div class="title"><i>✈</i> 飛時管理計算工具</div>
+            <div class="subtitle">請參閱 FOM 4.7.5</div>
         </div>
-        <div style="font-size:0.8rem; color:#999;">Final Logic v4.5</div>
     </div>
 
     <div class="main-grid">
@@ -314,16 +313,13 @@
 
             <!-- LOGIC: WOCL Zone -->
             <div class="form-group">
-                <label style="color:#7c3aed;">Base Timezone (For WOCL)</label>
-                <select id="baseTz" onchange="safeCalculate()">
-                    <option value="8" selected>UTC+8 (Taipei)</option>
-                    <option value="9">UTC+9 (Tokyo)</option>
-                    <option value="-7">UTC-7 (Los Angeles)</option>
-                    <option value="-8">UTC-8 (San Francisco)</option>
-                    <option value="0">UTC (London)</option>
-                </select>
-                <p style="font-size:0.7rem; color:#7c3aed; margin-top:2px;">*用於計算 Circadian Low (02:00-05:00 LT)</p>
-            </div>
+    <label for="baseTz" style="color:#7c3aed;">Base Timezone (For WOCL)</label>
+    <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+        <span style="color:#7c3aed; font-weight: bold;">UTC</span>
+        <input type="number" id="baseTz" value="8" min="-12" max="14" step="0.5" onchange="safeCalculate()" style="padding: 4px; border-radius: 4px; border: 1px solid #7c3aed; width: 80px;">
+    </div>
+    <p style="font-size:0.7rem; color:#7c3aed; margin-top:4px;">*用於計算 Circadian Low (02:00-05:00 LT)。請輸入時差數字（例：8, -7, 5.5）</p>
+</div>
 
             <div class="form-group" style="border-top:1px solid #eee; padding-top:10px;">
                 <label>飛行時間 (Flight Time)</label>
@@ -398,7 +394,7 @@
             <div class="form-group" style="margin-top:10px;">
                 <label class="logic-chk active" style="font-weight:700; color:#059669;">
                     <input type="checkbox" id="hasRestAcc" onchange="toggleRestAcc()">
-                    Rest in Appropriate accommodation
+                    Rest in Appropriate accommodation in Duty Time Period
                 </label>
             </div>
 
