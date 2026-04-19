@@ -225,13 +225,13 @@
     .res-val { font-size: 1.8rem; font-weight: 800; font-family: monospace; color: #111827; }
     .res-sub { font-size: 0.8rem; color: #6b7280; margin-top: 5px; display:flex; justify-content: space-between; font-weight: 500; }
 
-    /* Timeline Container Optimization */
+    /* === Timeline Container Optimization === */
     .timeline-box { margin-top: 25px; background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
     
-    /* Mobile-friendly horizontal scrolling */
+    /* Mobile-friendly horizontal scrolling, increased height for breathing room */
     .timeline-container { 
         position: relative; 
-        height: 240px; /* Increased height to accommodate staggered labels */
+        height: 400px; /* 增加整體高度，讓區塊有更多上下空間 */
         background: #f9fafb; 
         border-top: 2px solid #9ca3af; 
         margin-top: 30px; 
@@ -245,21 +245,44 @@
     .timeline-container::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
     .timeline-container::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
-    /* Inner wrapper to enforce min-width and prevent squishing on small screens */
+    /* 內層容器：移除寫死的 min-width，改由 JavaScript 動態計算，避免短任務被硬拉長 */
     .timeline-inner {
         position: relative;
-        min-width: 800px; /* Forces horizontal scroll on mobile, preserving proportions */
         height: 100%;
+        /* min-width 會在 JS 中動態寫入 */
     }
     
-    .block { position: absolute; height: 32px; line-height: 32px; text-align: center; color: white; font-size: 12px; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; z-index: 2; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    /* 調整時間區塊：加厚、Flex對齊 */
+    .block { 
+        position: absolute; 
+        height: 36px; /* 增加區塊厚度 */
+        border-radius: 6px; 
+        overflow: hidden; 
+        z-index: 2; 
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+        display: flex; 
+        align-items: center; /* 垂直置中 */
+    }
     
-    .bg-fdp { background: var(--color-success); top: 15px; z-index: 5;}
-    .bg-mfdp { background: repeating-linear-gradient(45deg, #60a5fa, #60a5fa 10px, #3b82f6 10px, #3b82f6 20px); top: 55px; opacity: 0.9; }
-    .bg-mrp { background: repeating-linear-gradient(45deg, #fbbf24, #fbbf24 10px, #f59e0b 10px, #f59e0b 20px); top: 95px; opacity: 0.9; }
-    .bg-rp { background: #4b5563; top: 135px; } 
-    .bg-dhd { background: repeating-linear-gradient(-45deg, #d1d5db, #d1d5db 5px, #9ca3af 5px, #9ca3af 10px); top: 15px; opacity: 0.7; z-index: 4; } 
-    .bg-ext { background: repeating-linear-gradient(45deg, #ddd6fe, #ddd6fe 10px, #8b5cf6 10px, #8b5cf6 20px); top: 55px; opacity: 0.8; z-index: 1; }
+    /* 解決爆匡/字體看不見的完美方案：黏性標籤 */
+    .sticky-text {
+        position: sticky;
+        left: 8px; /* 當區塊因長度超出螢幕時，文字會「黏」在畫面左側 */
+        padding: 0 6px;
+        white-space: nowrap;
+        font-size: 13px; /* 字體微調放大 */
+        font-weight: 700;
+        color: white;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.2); /* 增加文字辨識度 */
+    }
+
+    /* 各層的高度定位 (整體拉開間距) */
+    .bg-fdp { background: var(--color-success); top: 20px; z-index: 5;}
+    .bg-mfdp { background: repeating-linear-gradient(45deg, #60a5fa, #60a5fa 10px, #3b82f6 10px, #3b82f6 20px); top: 68px; opacity: 0.9; }
+    .bg-mrp { background: repeating-linear-gradient(45deg, #fbbf24, #fbbf24 10px, #f59e0b 10px, #f59e0b 20px); top: 116px; opacity: 0.9; }
+    .bg-rp { background: #4b5563; top: 164px; } 
+    .bg-dhd { background: repeating-linear-gradient(-45deg, #d1d5db, #d1d5db 5px, #9ca3af 5px, #9ca3af 10px); top: 20px; opacity: 0.7; z-index: 4; } 
+    .bg-ext { background: repeating-linear-gradient(45deg, #ddd6fe, #ddd6fe 10px, #8b5cf6 10px, #8b5cf6 20px); top: 68px; opacity: 0.8; z-index: 1; }
 
     /* WOCL Visual */
     .bg-wocl { 
@@ -269,19 +292,19 @@
         top: 0; height: 100%; z-index: 1; pointer-events: none;
     }
     .wocl-label {
-        position: absolute; top: 215px; font-size: 11px; color: var(--color-wocl); font-weight: 800; transform: translateX(5px); letter-spacing: 0.5px;
+        position: absolute; top: 270px; font-size: 11px; color: var(--color-wocl); font-weight: 800; transform: translateX(5px); letter-spacing: 0.5px;
     }
 
     .violation { background: var(--color-danger) !important; }
 
     .tick { position: absolute; top: 0; height: 100%; border-left: 1px dashed #9ca3af; pointer-events: none; z-index: 1; }
     
-    /* Smart Staggered Labels */
+    /* Smart Staggered Labels (配合增加的高度調整 Top) */
     .tick-label { 
         position: absolute; 
-        top: 175px; /* Default Level 1 */
+        top: 215px; /* Level 1 */
         transform: translateX(-50%); 
-        font-size: 11px; 
+        font-size: 11.5px; 
         background: rgba(255, 255, 255, 0.95); 
         padding: 4px 8px; 
         border: 1px solid #e5e7eb; 
@@ -297,18 +320,17 @@
     
     /* Alt Level for collision avoidance */
     .tick-label.alt { 
-        top: 210px; /* Level 2 - Pushed down */
-        background: rgba(243, 244, 246, 0.95); /* Slightly darker bg to differentiate */
+        top: 260px; /* Level 2 - Pushed down */
+        background: rgba(243, 244, 246, 0.95); 
         border-color: #d1d5db;
     }
-    /* Stem connecting the alt label to the main axis visually */
     .tick-label.alt::before {
         content: '';
         position: absolute;
         left: 50%;
-        top: -36px;
+        top: -46px; /* 延長虛線 */
         width: 1px;
-        height: 35px;
+        height: 45px;
         border-left: 1px dashed #d1d5db;
         transform: translateX(-50%);
         z-index: -1;
@@ -1041,7 +1063,7 @@ function drawTimeline(rep, rel, rStart, rEnd, actFDP, maxFDP, minRest, hasDHD, d
     const container = document.getElementById('timeline');
     container.innerHTML = "";
     
-    // Create inner wrapper to enforce scrollability on small screens
+    // Create inner wrapper to enforce dynamic width based on actual duration
     const innerWrapper = document.createElement('div');
     innerWrapper.className = 'timeline-inner';
     container.appendChild(innerWrapper);
@@ -1056,15 +1078,20 @@ function drawTimeline(rep, rel, rStart, rEnd, actFDP, maxFDP, minRest, hasDHD, d
     const cvsEnd = new Date(finalPoint.getTime() + 120*60000);
     const totalMin = (cvsEnd - cvsStart) / 60000;
 
+    // 動態寬度計算：不再寫死 800px，改由總時間計算。設定每小時至少佔用 24px，同時保底 100% 寬度
+    const requiredWidth = (totalMin / 60) * 24; 
+    innerWrapper.style.minWidth = `max(100%, ${requiredWidth}px)`;
+
     const getX = (d) => ((d - cvsStart)/60000 / totalMin) * 100;
     const getW = (m) => (m / totalMin) * 100;
 
+    // 加入 黏性文字 (Sticky Text) 結構，讓文字永遠顯示在畫面最顯眼處
     const addBlock = (x, w, txt, cls) => {
         const d = document.createElement('div');
         d.className = "block " + cls;
         d.style.left = x + "%";
         d.style.width = w + "%";
-        d.innerHTML = txt;
+        d.innerHTML = `<span class="sticky-text">${txt}</span>`;
         innerWrapper.appendChild(d);
     };
 
@@ -1084,8 +1111,7 @@ function drawTimeline(rep, rel, rStart, rEnd, actFDP, maxFDP, minRest, hasDHD, d
         l.innerHTML = txt.replace(/\n/g, '<br>');
         
         // --- Collision Detection Logic ---
-        // If a new label is too close to an existing level-0 label (e.g., within 10% distance), push it to level-1 (alt class)
-        let isCollision = placedTicks.some(tick => Math.abs(tick.x - x) < 10 && tick.level === 0);
+        let isCollision = placedTicks.some(tick => Math.abs(tick.x - x) < 8 && tick.level === 0);
         let currentLevel = 0;
 
         if (isCollision) {
