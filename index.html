@@ -36,7 +36,8 @@
 
     @media (min-width: 768px) { body { padding: 20px; } }
 
-    .container { max-width: 1000px; margin: 0 auto; }
+    /* 擴大整體寬度，完美適配 iPad Pro 11 */
+    .container { max-width: 1200px; margin: 0 auto; width: 100%; }
     .hidden { display: none !important; }
 
     /* Header */
@@ -57,9 +58,9 @@
     .title i { color: var(--jx-gold); margin-right: 10px; font-style: normal; font-size: 1.4rem; }
     .subtitle { font-size: 0.75rem; color: #6b7280; font-weight: 500; margin-left: 35px; margin-top: -2px; }
 
-    /* Layout */
-    .main-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-    @media (min-width: 900px) { .main-grid { grid-template-columns: 320px 1fr; } }
+    /* Layout - 修正 Flex/Grid 撐破螢幕的關鍵 (minmax(0, 1fr)) */
+    .main-grid { display: grid; grid-template-columns: 1fr; gap: 20px; width: 100%; }
+    @media (min-width: 900px) { .main-grid { grid-template-columns: 320px minmax(0, 1fr); } }
 
     /* Panels */
     .panel {
@@ -68,7 +69,6 @@
         border-radius: 8px;
         padding: 15px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-        height: 100%;
     }
     @media (min-width: 768px) { .panel { padding: 20px; } }
     
@@ -133,28 +133,49 @@
         z-index: 10;
     }
 
-    /* Smart DateTime Group Sync Styles */
+    /* --- Smart DateTime Group Sync Styles (Robust Layout for iPad) --- */
     .dt-group {
         border: 1px solid #e5e7eb;
         border-radius: 6px;
         overflow: hidden;
         margin-top: 5px;
+        width: 100%;
     }
-    .dt-row-utc {
-        display: flex; gap: 4px; align-items: center;
-        background: #f9fafb; padding: 6px;
-        border-bottom: 1px solid #e5e7eb;
+    .dt-row-utc, .dt-row-lcl {
+        display: flex; gap: 6px; align-items: center;
+        padding: 6px 8px; width: 100%;
     }
-    .dt-row-lcl {
-        display: flex; gap: 4px; align-items: center;
-        background: #f0f9ff; padding: 6px;
+    .dt-row-utc { background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+    .dt-row-lcl { background: #f0f9ff; }
+    
+    /* Strict sizing constraints to prevent blowout */
+    .dt-row-utc .date-wrapper, .dt-row-lcl .date-wrapper {
+        flex: 1.5 1 0%;
+        height: 32px;
+        min-width: 0;
+    }
+    .dt-row-utc select, .dt-row-lcl select {
+        flex: 1 1 0%;
+        height: 32px;
+        min-width: 0;
+        padding-left: 6px !important;
+        padding-right: 18px !important; /* Reduce arrow overlapping space */
+        font-size: 0.85rem;
+        background-size: 14px !important;
+        background-position: right 4px center !important;
+    }
+    .dt-row-lcl .tz-select {
+        flex: 1.2 1 0%;
+        font-size: 0.75rem;
     }
     .badge {
-        font-size: 0.65rem; font-weight: 800; padding: 2px 4px; border-radius: 3px; min-width: 32px; text-align: center;
+        flex: 0 0 auto;
+        font-size: 0.65rem; font-weight: 800; padding: 2px 4px; border-radius: 3px; min-width: 34px; text-align: center;
     }
     .badge-utc { background: #d1d5db; color: #374151; }
     .badge-lcl { background: #bae6fd; color: #0369a1; }
     
+    /* Standard Time Row (For Total Block Time etc.) */
     .time-row { display: flex; gap: 5px; align-items: center; }
     .time-row select { flex: 1; min-width: 50px; font-weight: bold; cursor: pointer; }
     .colon { font-weight: bold; color: #9ca3af; }
@@ -218,7 +239,7 @@
     .res-sub { font-size: 0.75rem; color: #6b7280; margin-top: 5px; display:flex; justify-content: space-between; }
 
     /* Timelines (Responsive & Fixed Width) */
-    .timeline-box { margin-top: 20px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; }
+    .timeline-box { margin-top: 20px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; width: 100%; }
     @media (min-width: 768px) { .timeline-box { padding: 20px; } }
     
     .timeline-container { position: relative; height: 140px; background: #f9fafb; border-top: 2px solid #9ca3af; margin-top: 30px; width: 100%; overflow: hidden; }
@@ -257,7 +278,7 @@
     <div class="header">
         <div>
             <div class="title"><i>✈</i> 飛時管理計算工具 V5.2</div>
-            <div class="subtitle">Smart Timezone Sync | 獨立休時視覺化</div>
+            <div class="subtitle">Smart Timezone Sync | 獨立休時視覺化 (iPad Pro Optimized)</div>
         </div>
     </div>
 
@@ -335,7 +356,7 @@
         </div>
 
         <!-- RIGHT: Timeline Inputs & Results -->
-        <div>
+        <div style="min-width: 0;"> <!-- 關鍵防破版層 -->
             <div class="panel" style="margin-bottom: 20px;">
                 <div class="panel-title">
                     <span>🕒</span>執勤與休時輸入 (UTC ↔ LCL 雙向同步)
@@ -368,22 +389,22 @@
                         <div class="dt-group">
                             <div class="dt-row-utc">
                                 <div class="badge badge-utc">UTC</div>
-                                <div class="date-wrapper" style="height:26px; flex:1.5;">
+                                <div class="date-wrapper">
                                     <div class="date-display" id="disp_reportDate">MM/DD</div>
                                     <input type="date" id="reportDate" class="date-input-hidden" onchange="updateDateDisplay('reportDate'); syncToLocal('report'); safeCalculate()">
                                 </div>
-                                <select id="reportHour" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToLocal('report'); safeCalculate()"></select>
-                                <select id="reportMinute" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToLocal('report'); safeCalculate()"></select>
+                                <select id="reportHour" onchange="syncToLocal('report'); safeCalculate()"></select>
+                                <select id="reportMinute" onchange="syncToLocal('report'); safeCalculate()"></select>
                             </div>
                             <div class="dt-row-lcl">
                                 <div class="badge badge-lcl">LCL</div>
-                                <div class="date-wrapper" style="height:26px; flex:1.5;">
+                                <div class="date-wrapper">
                                     <div class="date-display" id="disp_reportDate_lcl">MM/DD</div>
                                     <input type="date" id="reportDate_lcl" class="date-input-hidden" onchange="updateDateDisplay('reportDate_lcl'); syncToUTC('report'); safeCalculate()">
                                 </div>
-                                <select id="reportHour_lcl" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToUTC('report'); safeCalculate()"></select>
-                                <select id="reportMinute_lcl" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToUTC('report'); safeCalculate()"></select>
-                                <select id="reportTz" class="tz-select" style="padding:0 2px; height:26px; font-size:0.7rem; flex:1; background-color: #e0f2fe; border-color: #bae6fd; color: #0369a1;" onchange="syncToUTC('report'); safeCalculate()"></select>
+                                <select id="reportHour_lcl" onchange="syncToUTC('report'); safeCalculate()"></select>
+                                <select id="reportMinute_lcl" onchange="syncToUTC('report'); safeCalculate()"></select>
+                                <select id="reportTz" class="tz-select" style="background-color: #e0f2fe; border-color: #bae6fd; color: #0369a1;" onchange="syncToUTC('report'); safeCalculate()"></select>
                             </div>
                         </div>
                     </div>
@@ -394,22 +415,22 @@
                         <div class="dt-group">
                             <div class="dt-row-utc">
                                 <div class="badge badge-utc">UTC</div>
-                                <div class="date-wrapper" style="height:26px; flex:1.5;">
+                                <div class="date-wrapper">
                                     <div class="date-display" id="disp_releaseDate">MM/DD</div>
                                     <input type="date" id="releaseDate" class="date-input-hidden" onchange="updateDateDisplay('releaseDate'); syncToLocal('release'); safeCalculate()">
                                 </div>
-                                <select id="releaseHour" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToLocal('release'); safeCalculate()"></select>
-                                <select id="releaseMinute" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToLocal('release'); safeCalculate()"></select>
+                                <select id="releaseHour" onchange="syncToLocal('release'); safeCalculate()"></select>
+                                <select id="releaseMinute" onchange="syncToLocal('release'); safeCalculate()"></select>
                             </div>
                             <div class="dt-row-lcl">
                                 <div class="badge badge-lcl">LCL</div>
-                                <div class="date-wrapper" style="height:26px; flex:1.5;">
+                                <div class="date-wrapper">
                                     <div class="date-display" id="disp_releaseDate_lcl">MM/DD</div>
                                     <input type="date" id="releaseDate_lcl" class="date-input-hidden" onchange="updateDateDisplay('releaseDate_lcl'); syncToUTC('release'); safeCalculate()">
                                 </div>
-                                <select id="releaseHour_lcl" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToUTC('release'); safeCalculate()"></select>
-                                <select id="releaseMinute_lcl" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToUTC('release'); safeCalculate()"></select>
-                                <select id="releaseTz" class="tz-select" style="padding:0 2px; height:26px; font-size:0.7rem; flex:1; background-color: #e0f2fe; border-color: #bae6fd; color: #0369a1;" onchange="syncToUTC('release'); safeCalculate()"></select>
+                                <select id="releaseHour_lcl" onchange="syncToUTC('release'); safeCalculate()"></select>
+                                <select id="releaseMinute_lcl" onchange="syncToUTC('release'); safeCalculate()"></select>
+                                <select id="releaseTz" class="tz-select" style="background-color: #e0f2fe; border-color: #bae6fd; color: #0369a1;" onchange="syncToUTC('release'); safeCalculate()"></select>
                             </div>
                         </div>
                     </div>
@@ -475,22 +496,22 @@
                             <div class="dt-group">
                                 <div class="dt-row-utc">
                                     <div class="badge badge-utc">UTC</div>
-                                    <div class="date-wrapper" style="height:26px; flex:1.5;">
+                                    <div class="date-wrapper">
                                         <div class="date-display" id="disp_dhdEndDate">MM/DD</div>
                                         <input type="date" id="dhdEndDate" class="date-input-hidden" onchange="updateDateDisplay('dhdEndDate'); syncToLocal('dhdEnd'); safeCalculate()">
                                     </div>
-                                    <select id="dhdEndHour" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToLocal('dhdEnd'); safeCalculate()"></select>
-                                    <select id="dhdEndMinute" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToLocal('dhdEnd'); safeCalculate()"></select>
+                                    <select id="dhdEndHour" onchange="syncToLocal('dhdEnd'); safeCalculate()"></select>
+                                    <select id="dhdEndMinute" onchange="syncToLocal('dhdEnd'); safeCalculate()"></select>
                                 </div>
                                 <div class="dt-row-lcl">
                                     <div class="badge badge-lcl">LCL</div>
-                                    <div class="date-wrapper" style="height:26px; flex:1.5;">
+                                    <div class="date-wrapper">
                                         <div class="date-display" id="disp_dhdEndDate_lcl">MM/DD</div>
                                         <input type="date" id="dhdEndDate_lcl" class="date-input-hidden" onchange="updateDateDisplay('dhdEndDate_lcl'); syncToUTC('dhdEnd'); safeCalculate()">
                                     </div>
-                                    <select id="dhdEndHour_lcl" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToUTC('dhdEnd'); safeCalculate()"></select>
-                                    <select id="dhdEndMinute_lcl" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToUTC('dhdEnd'); safeCalculate()"></select>
-                                    <select id="dhdEndTz" class="tz-select" style="padding:0 2px; height:26px; font-size:0.7rem; flex:1; background-color: #e0f2fe; border-color: #bae6fd; color: #0369a1;" onchange="syncToUTC('dhdEnd'); safeCalculate()"></select>
+                                    <select id="dhdEndHour_lcl" onchange="syncToUTC('dhdEnd'); safeCalculate()"></select>
+                                    <select id="dhdEndMinute_lcl" onchange="syncToUTC('dhdEnd'); safeCalculate()"></select>
+                                    <select id="dhdEndTz" class="tz-select" style="background-color: #e0f2fe; border-color: #bae6fd; color: #0369a1;" onchange="syncToUTC('dhdEnd'); safeCalculate()"></select>
                                 </div>
                             </div>
                         </div>
@@ -500,22 +521,22 @@
                             <div class="dt-group">
                                 <div class="dt-row-utc">
                                     <div class="badge badge-utc">UTC</div>
-                                    <div class="date-wrapper" style="height:26px; flex:1.5;">
+                                    <div class="date-wrapper">
                                         <div class="date-display" id="disp_nextReportDate">MM/DD</div>
                                         <input type="date" id="nextReportDate" class="date-input-hidden" onchange="updateDateDisplay('nextReportDate'); syncToLocal('nextReport'); safeCalculate()">
                                     </div>
-                                    <select id="nextReportHour" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToLocal('nextReport'); safeCalculate()"></select>
-                                    <select id="nextReportMinute" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToLocal('nextReport'); safeCalculate()"></select>
+                                    <select id="nextReportHour" onchange="syncToLocal('nextReport'); safeCalculate()"></select>
+                                    <select id="nextReportMinute" onchange="syncToLocal('nextReport'); safeCalculate()"></select>
                                 </div>
                                 <div class="dt-row-lcl">
                                     <div class="badge badge-lcl">LCL</div>
-                                    <div class="date-wrapper" style="height:26px; flex:1.5;">
+                                    <div class="date-wrapper">
                                         <div class="date-display" id="disp_nextReportDate_lcl">MM/DD</div>
                                         <input type="date" id="nextReportDate_lcl" class="date-input-hidden" onchange="updateDateDisplay('nextReportDate_lcl'); syncToUTC('nextReport'); safeCalculate()">
                                     </div>
-                                    <select id="nextReportHour_lcl" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToUTC('nextReport'); safeCalculate()"></select>
-                                    <select id="nextReportMinute_lcl" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToUTC('nextReport'); safeCalculate()"></select>
-                                    <select id="nextReportTz" class="tz-select" style="padding:0 2px; height:26px; font-size:0.7rem; flex:1; background-color: #e0f2fe; border-color: #bae6fd; color: #0369a1;" onchange="syncToUTC('nextReport'); safeCalculate()"></select>
+                                    <select id="nextReportHour_lcl" onchange="syncToUTC('nextReport'); safeCalculate()"></select>
+                                    <select id="nextReportMinute_lcl" onchange="syncToUTC('nextReport'); safeCalculate()"></select>
+                                    <select id="nextReportTz" class="tz-select" style="background-color: #e0f2fe; border-color: #bae6fd; color: #0369a1;" onchange="syncToUTC('nextReport'); safeCalculate()"></select>
                                 </div>
                             </div>
                         </div>
@@ -529,22 +550,22 @@
                                 <div class="dt-group">
                                     <div class="dt-row-utc">
                                         <div class="badge badge-utc">UTC</div>
-                                        <div class="date-wrapper" style="height:26px; flex:1.5;">
+                                        <div class="date-wrapper">
                                             <div class="date-display" id="disp_hotelInDate">MM/DD</div>
                                             <input type="date" id="hotelInDate" class="date-input-hidden" onchange="updateDateDisplay('hotelInDate'); syncToLocal('hotelIn'); safeCalculate()">
                                         </div>
-                                        <select id="hotelInHour" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToLocal('hotelIn'); safeCalculate()"></select>
-                                        <select id="hotelInMinute" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToLocal('hotelIn'); safeCalculate()"></select>
+                                        <select id="hotelInHour" onchange="syncToLocal('hotelIn'); safeCalculate()"></select>
+                                        <select id="hotelInMinute" onchange="syncToLocal('hotelIn'); safeCalculate()"></select>
                                     </div>
                                     <div class="dt-row-lcl">
                                         <div class="badge badge-lcl">LCL</div>
-                                        <div class="date-wrapper" style="height:26px; flex:1.5;">
+                                        <div class="date-wrapper">
                                             <div class="date-display" id="disp_hotelInDate_lcl">MM/DD</div>
                                             <input type="date" id="hotelInDate_lcl" class="date-input-hidden" onchange="updateDateDisplay('hotelInDate_lcl'); syncToUTC('hotelIn'); safeCalculate()">
                                         </div>
-                                        <select id="hotelInHour_lcl" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToUTC('hotelIn'); safeCalculate()"></select>
-                                        <select id="hotelInMinute_lcl" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToUTC('hotelIn'); safeCalculate()"></select>
-                                        <select id="hotelInTz" class="tz-select" style="padding:0 2px; height:26px; font-size:0.7rem; flex:1; background-color: #e0f2fe; border-color: #bae6fd; color: #0369a1;" onchange="syncToUTC('hotelIn'); safeCalculate()"></select>
+                                        <select id="hotelInHour_lcl" onchange="syncToUTC('hotelIn'); safeCalculate()"></select>
+                                        <select id="hotelInMinute_lcl" onchange="syncToUTC('hotelIn'); safeCalculate()"></select>
+                                        <select id="hotelInTz" class="tz-select" style="background-color: #e0f2fe; border-color: #bae6fd; color: #0369a1;" onchange="syncToUTC('hotelIn'); safeCalculate()"></select>
                                     </div>
                                 </div>
                             </div>
@@ -553,22 +574,22 @@
                                 <div class="dt-group">
                                     <div class="dt-row-utc">
                                         <div class="badge badge-utc">UTC</div>
-                                        <div class="date-wrapper" style="height:26px; flex:1.5;">
+                                        <div class="date-wrapper">
                                             <div class="date-display" id="disp_hotelOutDate">MM/DD</div>
                                             <input type="date" id="hotelOutDate" class="date-input-hidden" onchange="updateDateDisplay('hotelOutDate'); syncToLocal('hotelOut'); safeCalculate()">
                                         </div>
-                                        <select id="hotelOutHour" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToLocal('hotelOut'); safeCalculate()"></select>
-                                        <select id="hotelOutMinute" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToLocal('hotelOut'); safeCalculate()"></select>
+                                        <select id="hotelOutHour" onchange="syncToLocal('hotelOut'); safeCalculate()"></select>
+                                        <select id="hotelOutMinute" onchange="syncToLocal('hotelOut'); safeCalculate()"></select>
                                     </div>
                                     <div class="dt-row-lcl">
                                         <div class="badge badge-lcl">LCL</div>
-                                        <div class="date-wrapper" style="height:26px; flex:1.5;">
+                                        <div class="date-wrapper">
                                             <div class="date-display" id="disp_hotelOutDate_lcl">MM/DD</div>
                                             <input type="date" id="hotelOutDate_lcl" class="date-input-hidden" onchange="updateDateDisplay('hotelOutDate_lcl'); syncToUTC('hotelOut'); safeCalculate()">
                                         </div>
-                                        <select id="hotelOutHour_lcl" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToUTC('hotelOut'); safeCalculate()"></select>
-                                        <select id="hotelOutMinute_lcl" style="padding:0 4px; height:26px; font-size:0.8rem;" onchange="syncToUTC('hotelOut'); safeCalculate()"></select>
-                                        <select id="hotelOutTz" class="tz-select" style="padding:0 2px; height:26px; font-size:0.7rem; flex:1; background-color: #e0f2fe; border-color: #bae6fd; color: #0369a1;" onchange="syncToUTC('hotelOut'); safeCalculate()"></select>
+                                        <select id="hotelOutHour_lcl" onchange="syncToUTC('hotelOut'); safeCalculate()"></select>
+                                        <select id="hotelOutMinute_lcl" onchange="syncToUTC('hotelOut'); safeCalculate()"></select>
+                                        <select id="hotelOutTz" class="tz-select" style="background-color: #e0f2fe; border-color: #bae6fd; color: #0369a1;" onchange="syncToUTC('hotelOut'); safeCalculate()"></select>
                                     </div>
                                 </div>
                             </div>
