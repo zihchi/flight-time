@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JX FDP & Rest Calculator v5.2 - Smart Timezone Sync</title>
+<title>JX FDP & Rest Calculator v5.3 - Smart Timezone Sync</title>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
@@ -277,7 +277,7 @@
     <!-- Header -->
     <div class="header">
         <div>
-            <div class="title"><i>✈</i> 飛時管理計算工具 V5.2</div>
+            <div class="title"><i>✈</i> 飛時管理計算工具 V5.3</div>
             <div class="subtitle">Smart Timezone Sync | 獨立休時視覺化 (iPad Pro Optimized)</div>
         </div>
     </div>
@@ -383,6 +383,7 @@
                         <div class="radio-group" id="startTypeGroup">
                             <label class="radio-label selected"><input type="radio" name="startType" value="report" checked onchange="updateRadioStyles(); safeCalculate()">Report</label>
                             <label class="radio-label"><input type="radio" name="startType" value="dhd" onchange="updateRadioStyles(); safeCalculate()">DHD</label>
+                            <label class="radio-label"><input type="radio" name="startType" value="other" onchange="updateRadioStyles(); safeCalculate()">Another Duty Start</label>
                         </div>
                         
                         <!-- Dual Sync DateTime Block -->
@@ -411,7 +412,11 @@
 
                     <!-- FDP End -->
                     <div class="form-group mb-0">
-                        <label style="color:var(--color-success); margin:0;">FDP End Time <span class="text-xs text-gray-500 font-normal lowercase">(usually Block-In + 30m)</span></label>
+                        <label style="color:var(--color-success); margin:0;">FDP End Time <span class="text-xs text-gray-500 font-normal ml-1">(*DHD 不算 FDP)</span></label>
+                        <div class="radio-group" id="endTypeGroup">
+                            <label class="radio-label selected"><input type="radio" name="endType" value="block30" checked onchange="updateRadioStyles(); safeCalculate()">Block-In + 30m</label>
+                            <label class="radio-label"><input type="radio" name="endType" value="actual" onchange="updateRadioStyles(); safeCalculate()">Another Duty End</label>
+                        </div>
                         <div class="dt-group">
                             <div class="dt-row-utc">
                                 <div class="badge badge-utc">UTC</div>
@@ -675,7 +680,7 @@
 </div>
 
 <script>
-/* --- LOGIC V5.2 Smart Timezone Sync --- */
+/* --- LOGIC V5.3 Smart Timezone Sync --- */
 const pad = (n) => n.toString().padStart(2, '0');
 const fmt = (m) => `${Math.floor(m/60)}:${pad(m%60)}`;
 
@@ -1167,6 +1172,10 @@ function drawFDPTimeline(rep, rel, actFDP, maxFDP, hasDHD, dhdEnd, offset, extPi
     tl.addTick(rep, "RPT\n"+fT(rep));
     tl.addTick(rel, "END\n"+fT(rel));
     if(hasDHD && dhdEnd) tl.addTick(dhdEnd, "DHD End\n"+fT(dhdEnd));
+    
+    // Add MAX FDP Tick
+    const maxFDPTime = new Date(rep.getTime() + maxFDP * 60000);
+    tl.addTick(maxFDPTime, `<strong style="color:var(--color-info)">MAX FDP</strong>\n${fT(maxFDPTime)}`);
 }
 
 function drawRestTimeline(rStart, rEnd, actRest, minRest) {
